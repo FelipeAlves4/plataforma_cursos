@@ -45,6 +45,14 @@ class PlatformAccessTest extends TestCase
         $this->actingAs($student)->get("/lessons/{$lesson->id}")->assertOk();
     }
 
+    public function test_student_cannot_access_an_unenrolled_course(): void
+    {
+        [$course] = $this->courseWithLesson();
+        $student = User::factory()->create();
+
+        $this->actingAs($student)->get("/courses/{$course->slug}")->assertForbidden();
+    }
+
     public function test_student_can_mark_a_lesson_complete_and_progress_is_calculated(): void
     {
         [$course, $firstLesson] = $this->courseWithLesson();

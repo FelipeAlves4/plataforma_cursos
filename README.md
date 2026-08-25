@@ -1,58 +1,52 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Asex Educação — Plataforma de Cursos
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Plataforma de aprendizagem para profissionais e negócios do setor de alimentação. O fluxo atual é login, liberação por matrícula, cursos, aulas em vídeo e progresso — sem pagamentos, assinaturas ou checkout.
 
-## About Laravel
+## Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Laravel 13 / PHP 8.3+
+- React, TypeScript, Inertia.js, Tailwind CSS e Vite
+- Laravel Breeze para autenticação
+- Eloquent para cursos, módulos, aulas, matrículas e progresso
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Arquitetura
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+`Course → CourseModule → Lesson` é a estrutura de conteúdo. `Enrollment` determina o acesso de estudantes e `LessonProgress` mantém conclusão e última aula acessada. A autorização acontece no backend através de policies; o front-end não libera conteúdo por conta própria.
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Instalação
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+php artisan storage:link
+pnpm install
+pnpm run build
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Para desenvolvimento, execute `php artisan serve` e `pnpm dev`. Configure banco, mail e demais variáveis padrão do Laravel no `.env`; não há variáveis de pagamento nesta versão.
 
-## Contributing
+## Dados de demonstração
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Após `php artisan migrate --seed`:
 
-## Code of Conduct
+- Admin: `admin@example.test` / `password`
+- Instrutor: `instrutor@example.test` / `password`
+- Aluno: `aluno@example.test` / `password`
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Troque essas senhas fora de ambientes locais.
 
-## Security Vulnerabilities
+## Vídeo
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+O administrador cola a URL normal do YouTube (`watch`, `youtu.be` ou `embed`). O backend valida e armazena o ID e uma URL normalizada; o player usa `youtube-nocookie.com` e o parâmetro oficial `rel=0` (vídeos relacionados do mesmo canal). Panda permanece como provider separado para evolução futura.
 
-## License
+## Verificação
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+./vendor/bin/pint
+composer test
+pnpm run build
+```
+
+Os testes cobrem autenticação, roles, acesso a cursos/aulas, progresso e parser de URLs do YouTube. Para deploy, configure `APP_ENV`, `APP_KEY`, banco, armazenamento público e o processo de build dos assets no provedor escolhido.

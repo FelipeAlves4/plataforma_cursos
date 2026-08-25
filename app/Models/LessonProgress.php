@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
-    'user_id', 'lesson_id', 'completed', 'started_at', 'completed_at', 'last_position_seconds',
+    'user_id', 'lesson_id', 'completed', 'started_at', 'completed_at', 'last_accessed_at', 'last_position_seconds',
 ])]
 class LessonProgress extends Model
 {
@@ -18,6 +18,7 @@ class LessonProgress extends Model
         return [
             'completed' => 'boolean',
             'started_at' => 'datetime',
+            'last_accessed_at' => 'datetime',
             'completed_at' => 'datetime',
         ];
     }

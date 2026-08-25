@@ -16,10 +16,8 @@ class LessonPolicy
         $lesson->loadMissing('module.course');
         $course = $lesson->module->course;
 
-        return $course->isPublished() && (
-            $lesson->is_preview
-            || $course->enrollments()->where('user_id', $user->id)->exists()
-        );
+        return $course->isPublished()
+            && $course->enrollments()->where('user_id', $user->id)->exists();
     }
 
     public function update(User $user, Lesson $lesson): bool

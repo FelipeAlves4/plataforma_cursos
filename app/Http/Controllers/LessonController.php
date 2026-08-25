@@ -19,14 +19,18 @@ class LessonController extends Controller
 
         LessonProgress::query()->firstOrCreate(
             ['user_id' => $request->user()->id, 'lesson_id' => $lesson->id],
-            ['started_at' => now()],
+            ['started_at' => now(), 'last_accessed_at' => now()],
         );
+        LessonProgress::query()->where('user_id', $request->user()->id)->where('lesson_id', $lesson->id)->update(['last_accessed_at' => now()]);
 
         $completedLessonIds = LessonProgress::query()
             ->where('user_id', $request->user()->id)
             ->where('completed', true)
             ->pluck('lesson_id')
             ->all();
+
+        $orderedLessons = $course->modules->flatMap->lessons->values();
+        $position = $orderedLessons->search(fn ($item) => $item->id === $lesson->id);
 
         return Inertia::render('Lessons/Show', [
             'lesson' => [
@@ -51,6 +55,10 @@ class LessonController extends Controller
                         'completed' => in_array($courseLesson->id, $completedLessonIds, true),
                     ]),
                 ]),
+            ],
+            'navigation' => [
+                'previousLessonId' => $position !== false ? $orderedLessons->get($position - 1)?->id : null,
+                'nextLessonId' => $position !== false ? $orderedLessons->get($position + 1)?->id : null,
             ],
         ]);
     }

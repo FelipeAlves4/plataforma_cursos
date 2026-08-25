@@ -1,0 +1,4 @@
+import AdminLayout from '@/Layouts/AdminLayout';
+import { Head } from '@inertiajs/react';
+type Props = { metrics: Record<string, number> };
+export default function Dashboard({ metrics }: Props) { const cards = [['Alunos', metrics.students],['Cursos', metrics.courses],['Cursos publicados', metrics.publishedCourses],['Aulas', metrics.lessons],['Matrículas', metrics.enrollments],['Conclusão média', `${metrics.averageCompletion}%`]]; return <AdminLayout><Head title="Visão geral" /><p className="eyebrow text-brand-700">Administração</p><h1 className="mt-2 text-3xl font-black">Visão geral</h1><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{cards.map(([label, value]) => <article key={String(label)} className="rounded-2xl border border-ink/10 bg-white p-6"><p className="text-sm text-ink/60">{label}</p><strong className="mt-2 block text-4xl">{value}</strong></article>)}</div></AdminLayout>; }

@@ -25,22 +25,33 @@ class DatabaseSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
-        $students = User::factory(3)->create();
+        $student = User::query()->create([
+            'name' => 'Aluno Demonstração', 'email' => 'aluno@example.test', 'password' => Hash::make('password'),
+            'role' => UserRole::Student, 'email_verified_at' => now(),
+        ]);
+        $instructor = User::query()->create([
+            'name' => 'Mariana Costa', 'email' => 'instrutor@example.test', 'password' => Hash::make('password'),
+            'role' => UserRole::Instructor, 'email_verified_at' => now(),
+        ]);
 
         $courses = [
             [
-                'title' => 'Laravel do Zero',
-                'slug' => 'laravel-do-zero',
-                'description' => 'Fundamentos práticos para criar aplicações Laravel.',
+                'title' => 'Gestão de Restaurantes: Fundamentos',
+                'slug' => 'gestao-de-restaurantes-fundamentos',
+                'description' => 'Ferramentas práticas para organizar a operação e crescer com consistência.',
+                'category' => 'Gestão', 'level' => 'Iniciante',
                 'modules' => [
-                    'Introdução ao Laravel' => ['Boas-vindas', 'Preparando o ambiente', 'Primeira rota'],
-                    'Banco de Dados' => ['Migrations e models', 'Relacionamentos Eloquent'],
+                    'Introdução' => ['Boas-vindas', 'Como aproveitar a trilha'],
+                    'Gestão' => ['Rotina e indicadores', 'Custos e margem'],
+                    'Atendimento' => ['Experiência do cliente'],
+                    'Operação' => ['Padrões que escalam'],
                 ],
             ],
             [
-                'title' => 'React para Produtos Digitais',
-                'slug' => 'react-para-produtos-digitais',
-                'description' => 'Componentes, estado e interfaces com foco em produto.',
+                'title' => 'Atendimento que Fideliza',
+                'slug' => 'atendimento-que-fideliza',
+                'description' => 'Ações simples para melhorar cada contato com o cliente.',
+                'category' => 'Atendimento', 'level' => 'Intermediário',
                 'modules' => [
                     'Base do React' => ['Componentes e props', 'Estado e eventos'],
                     'Interface de Produto' => ['Composição de layouts', 'Feedback e acessibilidade'],
@@ -54,6 +65,8 @@ class DatabaseSeeder extends Seeder
                 'slug' => $courseData['slug'],
                 'description' => $courseData['description'],
                 'status' => CourseStatus::Published,
+                'category' => $courseData['category'], 'level' => $courseData['level'], 'instructor_id' => $instructor->id,
+                'estimated_duration_minutes' => 90,
             ]);
 
             foreach ($courseData['modules'] as $moduleTitle => $lessonTitles) {
@@ -77,13 +90,7 @@ class DatabaseSeeder extends Seeder
                 }
             }
 
-            foreach ($students as $student) {
-                Enrollment::query()->create([
-                    'user_id' => $student->id,
-                    'course_id' => $course->id,
-                    'enrolled_at' => now(),
-                ]);
-            }
+            Enrollment::query()->create(['user_id' => $student->id, 'course_id' => $course->id, 'enrolled_at' => now()]);
         }
 
         $admin->touch();

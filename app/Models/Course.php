@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
-#[Fillable(['title', 'slug', 'description', 'thumbnail_path', 'status'])]
+#[Fillable(['title', 'slug', 'description', 'thumbnail_path', 'status', 'category', 'level', 'instructor_id', 'estimated_duration_minutes'])]
 class Course extends Model
 {
     use HasFactory;
@@ -33,6 +34,11 @@ class Course extends Model
     public function lessons(): HasManyThrough
     {
         return $this->hasManyThrough(Lesson::class, CourseModule::class, 'course_id', 'module_id');
+    }
+
+    public function instructor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'instructor_id');
     }
 
     public function scopePublished(Builder $query): void

@@ -1,119 +1,13 @@
 import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
 import { PageProps } from '@/types';
-import { Transition } from '@headlessui/react';
-import { Link, useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { useForm, usePage } from '@inertiajs/react';
+import { FormEvent } from 'react';
 
-export default function UpdateProfileInformation({
-    mustVerifyEmail,
-    status,
-    className = '',
-}: {
-    mustVerifyEmail: boolean;
-    status?: string;
-    className?: string;
-}) {
+export default function UpdateProfileInformation({ className = '' }: { mustVerifyEmail: boolean; status?: string; className?: string }) {
     const user = usePage<PageProps>().props.auth.user;
-
-    const { data, setData, patch, errors, processing, recentlySuccessful } =
-        useForm({
-            name: user.name,
-            email: user.email,
-        });
-
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
-
-        patch(route('profile.update'));
-    };
-
-    return (
-        <section className={className}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900">
-                    Profile Information
-                </h2>
-
-                <p className="mt-1 text-sm text-gray-600">
-                    Update your account's profile information and email address.
-                </p>
-            </header>
-
-            <form onSubmit={submit} className="mt-6 space-y-6">
-                <div>
-                    <InputLabel htmlFor="name" value="Name" />
-
-                    <TextInput
-                        id="name"
-                        className="mt-1 block w-full"
-                        value={data.name}
-                        onChange={(e) => setData('name', e.target.value)}
-                        required
-                        isFocused
-                        autoComplete="name"
-                    />
-
-                    <InputError className="mt-2" message={errors.name} />
-                </div>
-
-                <div>
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        className="mt-1 block w-full"
-                        value={data.email}
-                        onChange={(e) => setData('email', e.target.value)}
-                        required
-                        autoComplete="username"
-                    />
-
-                    <InputError className="mt-2" message={errors.email} />
-                </div>
-
-                {mustVerifyEmail && user.email_verified_at === null && (
-                    <div>
-                        <p className="mt-2 text-sm text-gray-800">
-                            Your email address is unverified.
-                            <Link
-                                href={route('verification.send')}
-                                method="post"
-                                as="button"
-                                className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                            >
-                                Click here to re-send the verification email.
-                            </Link>
-                        </p>
-
-                        {status === 'verification-link-sent' && (
-                            <div className="mt-2 text-sm font-medium text-green-600">
-                                A new verification link has been sent to your
-                                email address.
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>Save</PrimaryButton>
-
-                    <Transition
-                        show={recentlySuccessful}
-                        enter="transition ease-in-out"
-                        enterFrom="opacity-0"
-                        leave="transition ease-in-out"
-                        leaveTo="opacity-0"
-                    >
-                        <p className="text-sm text-gray-600">
-                            Saved.
-                        </p>
-                    </Transition>
-                </div>
-            </form>
-        </section>
-    );
+    const form = useForm({ name: user.name, email: user.email, phone: user.phone ?? '', job_title: user.job_title ?? '', company: user.company ?? '', business_segment: user.business_segment ?? '', city: user.city ?? '', state: user.state ?? '' });
+    const field = (key: keyof typeof form.data, label: string, type = 'text') => <label className="grid gap-2 text-sm font-semibold">{label}<input type={type} value={form.data[key]} onChange={event => form.setData(key, event.target.value)} className="rounded-lg border-ink/15" /><InputError message={form.errors[key]} /></label>;
+    const submit = (event: FormEvent) => { event.preventDefault(); form.patch(route('profile.update')); };
+    return <section className={className}><header><p className="eyebrow text-brand-700">Meu perfil</p><h2 className="mt-2 text-2xl font-black">Dados profissionais</h2><p className="mt-2 text-sm text-ink/65">Complete seus dados para personalizar sua experiência.</p></header><form onSubmit={submit} className="mt-7 grid gap-5 sm:grid-cols-2">{field('name', 'Nome completo')}{field('email', 'E-mail', 'email')}{field('phone', 'Telefone')}{field('job_title', 'Cargo ou função')}{field('company', 'Empresa')}{field('business_segment', 'Segmento do estabelecimento')}{field('city', 'Cidade')}{field('state', 'Estado (UF)')}<div className="sm:col-span-2 flex items-center gap-4"><PrimaryButton disabled={form.processing}>Salvar alterações</PrimaryButton>{form.recentlySuccessful && <span className="text-sm font-semibold text-brand-700">Dados salvos.</span>}</div></form></section>;
 }

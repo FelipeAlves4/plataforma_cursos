@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreCourseRequest;
 use App\Http\Requests\Admin\UpdateCourseRequest;
 use App\Models\Course;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -25,7 +27,7 @@ class CourseController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Admin/Courses/Form');
+        return Inertia::render('Admin/Courses/Form', ['instructors' => $this->instructors()]);
     }
 
     public function store(StoreCourseRequest $request): RedirectResponse
@@ -40,6 +42,7 @@ class CourseController extends Controller
     {
         return Inertia::render('Admin/Courses/Form', [
             'course' => $course->load('modules.lessons'),
+            'instructors' => $this->instructors(),
         ]);
     }
 
@@ -75,5 +78,11 @@ class CourseController extends Controller
         $course->update([
             'thumbnail_path' => $request->file('thumbnail')->store("courses/{$course->id}", 'public'),
         ]);
+    }
+
+    private function instructors(): array
+    {
+        return User::query()->where('role', UserRole::Instructor)->orWhere('role', UserRole::Admin)
+            ->orderBy('name')->get(['id', 'name'])->all();
     }
 }
