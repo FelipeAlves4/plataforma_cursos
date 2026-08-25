@@ -3,9 +3,25 @@
 @tailwind utilities;
 
 @layer base {
-    :root { --ink: #17201c; --cream: #f7f5ef; --sand: #eee9db; --brand: #d3df49; }
+    :root {
+        --asex-purple-900: #2b0870;
+        --asex-purple-700: #6429aa;
+        --asex-purple-600: #8138c5;
+        --asex-purple-500: #9347dd;
+        --asex-background: #faf9fc;
+        --asex-surface: #ffffff;
+        --asex-border: #e4d8ef;
+        --asex-text: #19052f;
+        --asex-muted: #665a73;
+        --asex-success: #237a56;
+        --asex-gradient: linear-gradient(135deg, #6429aa 0%, #9347dd 100%);
+    }
     body { @apply antialiased; }
     a, button, input, select, textarea { @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2; }
 }
 
-@layer components { .eyebrow { @apply text-xs font-bold uppercase tracking-[0.16em]; } .hero-glow { @apply absolute -right-48 -top-44 h-[36rem] w-[36rem] rounded-full bg-brand-500/20 blur-3xl; } }
+@layer components {
+    .eyebrow { @apply text-xs font-bold uppercase tracking-[0.16em]; }
+    .hero-glow { @apply absolute -right-48 -top-44 h-[36rem] w-[36rem] rounded-full bg-brand-500/25 blur-3xl; }
+    .asex-gradient { background: var(--asex-gradient); }
+}

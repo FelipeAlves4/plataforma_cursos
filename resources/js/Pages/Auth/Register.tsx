@@ -24,11 +24,13 @@ export default function Register() {
 
     return (
         <GuestLayout>
-            <Head title="Register" />
+            <Head title="Criar conta" />
+
+            <header className="mb-7"><p className="eyebrow text-brand-700">Comece agora</p><h1 className="mt-2 text-2xl font-black text-ink">Crie sua conta Asex.</h1><p className="mt-2 text-sm text-ink/60">Tenha seus cursos e progresso organizados em um só lugar.</p></header>
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="name" value="Name" />
+                    <InputLabel htmlFor="name" value="Nome completo" />
 
                     <TextInput
                         id="name"
@@ -45,7 +47,7 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="email" value="Email" />
+                    <InputLabel htmlFor="email" value="E-mail" />
 
                     <TextInput
                         id="email"
@@ -62,7 +64,7 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
+                    <InputLabel htmlFor="password" value="Senha" />
 
                     <TextInput
                         id="password"
@@ -81,7 +83,7 @@ export default function Register() {
                 <div className="mt-4">
                     <InputLabel
                         htmlFor="password_confirmation"
-                        value="Confirm Password"
+                        value="Confirmar senha"
                     />
 
                     <TextInput
@@ -106,13 +108,13 @@ export default function Register() {
                 <div className="mt-4 flex items-center justify-end">
                     <Link
                         href={route('login')}
-                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="rounded-md text-sm text-brand-700 underline hover:text-brand-900"
                     >
-                        Already registered?
+                        Já possui uma conta?
                     </Link>
 
                     <PrimaryButton className="ms-4" disabled={processing}>
-                        Register
+                        Criar conta
                     </PrimaryButton>
                 </div>
             </form>
