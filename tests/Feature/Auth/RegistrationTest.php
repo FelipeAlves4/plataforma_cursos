@@ -31,4 +31,16 @@ class RegistrationTest extends TestCase
         $this->assertSame(UserRole::Student, User::query()->where('email', 'test@example.com')->firstOrFail()->role);
         $response->assertRedirect(route('dashboard', absolute: false));
     }
+
+    public function test_registration_is_rate_limited_after_six_attempts(): void
+    {
+        for ($attempt = 0; $attempt < 6; $attempt++) {
+            $this->withServerVariables(['REMOTE_ADDR' => '192.0.2.10'])
+                ->post('/register', []);
+        }
+
+        $this->withServerVariables(['REMOTE_ADDR' => '192.0.2.10'])
+            ->post('/register', [])
+            ->assertTooManyRequests();
+    }
 }
