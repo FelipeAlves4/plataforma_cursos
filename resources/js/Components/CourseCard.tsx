@@ -2,9 +2,18 @@ import { Link } from '@inertiajs/react';
 import CourseCover from './CourseCover';
 import ProgressBar from './ProgressBar';
 
-type Props = { course: { title: string; slug: string; description?: string | null; thumbnailPath?: string | null; videoId?: string | null; category?: string | null; level?: string | null; progress: number; lessonCount: number; moduleCount?: number; durationMinutes?: number | null; enrolled?: boolean; status?: string; }; detail?: string };
+type Course = { title: string; slug: string; description?: string | null; thumbnailPath?: string | null; videoId?: string | null; category?: string | null; level?: string | null; progress: number; lessonCount: number; moduleCount?: number; durationMinutes?: number | null; enrolled?: boolean; status?: string; };
+type Props = { course: Course; detail?: string; variant?: 'standard' | 'poster' | 'rail' };
 
-export default function CourseCard({ course, detail }: Props) {
+export default function CourseCard({ course, detail, variant = 'standard' }: Props) {
+    if (variant === 'poster') {
+        return <article className="group relative min-w-[168px] overflow-hidden rounded-xl border border-white/[0.09] bg-[#17111e] shadow-2xl shadow-black/20 transition duration-300 motion-safe:hover:-translate-y-1 motion-safe:hover:shadow-[#8138c5]/20 sm:min-w-[190px]"><Link aria-label={`Abrir curso ${course.title}`} className="block aspect-[2/3] overflow-hidden" href={`/courses/${course.slug}`}><CourseCover className="transition duration-500 motion-safe:group-hover:scale-[1.05]" thumbnailPath={course.thumbnailPath} title={course.title} videoId={course.videoId} /><div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-[#09070d] via-[#09070d]/55 to-transparent" /><div className="absolute inset-x-0 bottom-0 p-4">{(course.category || course.level) && <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-[#c28aff]">{[course.category, course.level].filter(Boolean).join(' · ')}</p>}<h3 className="mt-1 text-base font-black leading-tight text-white">{course.title}</h3><p className="mt-2 text-xs font-medium text-white/55">{course.lessonCount} aulas</p>{course.enrolled !== false && course.progress > 0 && <div className="mt-3"><ProgressBar tone="dark" value={course.progress} /></div>}</div></Link></article>;
+    }
+
+    if (variant === 'rail') {
+        return <Link className="group relative block min-w-[250px] overflow-hidden rounded-xl border border-white/[0.09] bg-[#17111e] transition duration-300 hover:border-white/20 motion-safe:hover:-translate-y-1 sm:min-w-[290px]" href={`/courses/${course.slug}`}><div className="aspect-[16/9] overflow-hidden"><CourseCover className="transition duration-500 motion-safe:group-hover:scale-[1.04]" thumbnailPath={course.thumbnailPath} title={course.title} videoId={course.videoId} /></div><div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#09070d] via-[#09070d]/65 to-transparent px-4 pb-3 pt-12"><p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-[#d0a5ff]">{[course.category, course.level].filter(Boolean).join(' · ') || `${course.lessonCount} aulas`}</p><h3 className="mt-1 text-sm font-bold leading-tight text-white">{course.title}</h3></div></Link>;
+    }
+
     return (
         <article className="group overflow-hidden rounded-2xl border border-asex-border bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-900/10">
             <div className="aspect-video overflow-hidden"><CourseCover className="transition duration-500 group-hover:scale-[1.03]" thumbnailPath={course.thumbnailPath} title={course.title} videoId={course.videoId} /></div>

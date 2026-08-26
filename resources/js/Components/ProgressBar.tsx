@@ -13,7 +13,7 @@ export default function ProgressBar({ value, label, tone = 'default' }: Props) {
                 <span>{label ?? 'Progresso'}</span>
                 <span className={`font-semibold ${tone === 'dark' ? 'text-white' : 'text-ink'}`}>{percentage}%</span>
             </div>
-            <div className={`h-2 overflow-hidden rounded-full ${tone === 'dark' ? 'bg-white/15' : 'bg-brand-100'}`} aria-label={`${label ?? 'Progresso'}: ${percentage}%`}>
+            <div className={`h-1.5 overflow-hidden rounded-full ${tone === 'dark' ? 'bg-white/15' : 'bg-brand-100'}`} aria-label={`${label ?? 'Progresso'}: ${percentage}%`}>
                 <div className="asex-gradient h-full rounded-full transition-[width] duration-300" style={{ width: `${percentage}%` }} />
             </div>
         </div>

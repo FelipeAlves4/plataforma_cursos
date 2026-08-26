@@ -20,7 +20,7 @@ class CourseController extends Controller
             'status' => ['nullable', 'in:not_started,in_progress,completed'],
         ]);
         $user = $request->user();
-        $query = Course::query()->published()->with(['instructor'])->withCount('lessons');
+        $query = Course::query()->published()->with(['instructor', 'modules.lessons'])->withCount('lessons');
 
         $query->when($filters['search'] ?? null, fn ($q, $search) => $q->where('title', 'like', "%{$search}%"))
             ->when($filters['category'] ?? null, fn ($q, $category) => $q->where('category', $category))
@@ -37,7 +37,7 @@ class CourseController extends Controller
             return [
                 'id' => $course->id, 'title' => $course->title, 'slug' => $course->slug,
                 'description' => $course->description, 'thumbnailPath' => $course->thumbnail_path,
-                'videoId' => null,
+                'videoId' => $course->modules->flatMap->lessons->first()?->video_id,
                 'category' => $course->category, 'level' => $course->level,
                 'instructor' => $course->instructor?->name, 'lessonCount' => $course->lessons_count,
                 'durationMinutes' => $course->estimated_duration_minutes,

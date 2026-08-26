@@ -66,6 +66,21 @@ class DashboardTest extends TestCase
             ->assertRedirect(route('admin.dashboard', absolute: false));
     }
 
+    public function test_dashboard_returns_no_content_rails_for_a_student_without_courses(): void
+    {
+        $student = User::factory()->create();
+
+        $this->actingAs($student)->get('/dashboard')
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Dashboard')
+                ->has('courses', 0)
+                ->where('continueLearning', null)
+                ->has('featuredCourses', 0)
+                ->has('newCourses', 0)
+                ->has('recommendedCourses', 0)
+            );
+    }
+
     public function test_dashboard_provides_course_discovery_and_editorial_learning_data(): void
     {
         $student = User::factory()->create();

@@ -216,14 +216,18 @@ class CourseBuilderTest extends TestCase
             );
     }
 
-    public function test_catalog_returns_a_null_thumbnail_path_when_course_has_no_cover(): void
+    public function test_catalog_returns_the_youtube_fallback_data_when_course_has_no_cover(): void
     {
         $course = $this->course();
+        $lesson = $this->lesson($this->module($course));
         $course->update(['status' => CourseStatus::Published]);
         $student = User::factory()->create(['role' => UserRole::Student]);
 
         $this->actingAs($student)->get('/courses')
-            ->assertInertia(fn (Assert $page) => $page->where('courses.0.thumbnailPath', null));
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('courses.0.thumbnailPath', null)
+                ->where('courses.0.videoId', $lesson->video_id)
+            );
     }
 
     private function course(): Course
