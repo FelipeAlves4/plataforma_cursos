@@ -67,6 +67,8 @@ class LessonController extends Controller
                     'lessons' => $module->lessons->map(fn ($courseLesson) => [
                         'id' => $courseLesson->id,
                         'title' => $courseLesson->title,
+                        'videoId' => $courseLesson->video_id,
+                        'durationSeconds' => $courseLesson->duration_seconds,
                         'completed' => in_array($courseLesson->id, $completedLessonIds, true),
                         'number' => $lessonPositions[$courseLesson->id] + 1,
                     ]),

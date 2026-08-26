@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Lesson;
 use App\Models\LessonProgress;
@@ -28,15 +29,9 @@ class DashboardController extends Controller
             ->latest('enrolled_at')
             ->get();
 
-        $courses = $enrollments->map(fn (Enrollment $enrollment) => [
-            'id' => $enrollment->course->id,
-            'title' => $enrollment->course->title,
-            'slug' => $enrollment->course->slug,
-            'description' => $enrollment->course->description,
-            'thumbnailPath' => $enrollment->course->thumbnail_path,
-            'progress' => $progress->percentageFor($user, $enrollment->course),
-            'lessonCount' => $enrollment->course->lessons->count(),
-        ]);
+        $enrolledCourses = $enrollments->pluck('course');
+        $courseProgress = $progress->percentagesFor($user, $enrolledCourses);
+        $courses = $enrolledCourses->map(fn (Course $course) => $this->courseData($course, $courseProgress[$course->id] ?? 0));
         $courseIds = $enrollments->pluck('course_id');
         $lastProgress = LessonProgress::query()
             ->with('lesson.module.course')
@@ -49,11 +44,19 @@ class DashboardController extends Controller
             ->whereBelongsTo($user)
             ->where('completed', true)
             ->pluck('lesson_id');
-        $fallbackLesson = $enrollments
-            ->flatMap(fn (Enrollment $enrollment) => $enrollment->course->modules->flatMap->lessons)
+        $fallbackLesson = $enrolledCourses
+            ->flatMap(fn (Course $course) => $course->modules->flatMap->lessons)
             ->first(fn (Lesson $lesson) => ! $completedLessonIds->contains($lesson->id))
-            ?? $enrollments->flatMap(fn (Enrollment $enrollment) => $enrollment->course->modules->flatMap->lessons)->first();
+            ?? $enrolledCourses->flatMap(fn (Course $course) => $course->modules->flatMap->lessons)->first();
         $continueLesson = $lastProgress?->lesson ?? $fallbackLesson;
+        $recommendedCourses = Course::query()
+            ->published()
+            ->whereNotIn('id', $courseIds)
+            ->with('modules.lessons')
+            ->latest()
+            ->take(4)
+            ->get()
+            ->map(fn (Course $course) => $this->courseData($course, 0, false));
 
         return Inertia::render('Dashboard', [
             'courses' => $courses,
@@ -62,9 +65,14 @@ class DashboardController extends Controller
                 'lessonTitle' => $continueLesson->title,
                 'moduleTitle' => $continueLesson->module->title,
                 'courseTitle' => $continueLesson->module->course->title,
+                'courseSlug' => $continueLesson->module->course->slug,
                 'thumbnailPath' => $continueLesson->module->course->thumbnail_path,
-                'progress' => $progress->percentageFor($user, $continueLesson->module->course),
+                'videoId' => $continueLesson->video_id,
+                'progress' => $courseProgress[$continueLesson->module->course->id] ?? 0,
             ] : null,
+            'featuredCourses' => $courses->take(2)->values(),
+            'newCourses' => $recommendedCourses->take(2)->values(),
+            'recommendedCourses' => $recommendedCourses,
             'metrics' => [
                 'inProgress' => $courses->filter(fn (array $course) => $course['progress'] > 0 && $course['progress'] < 100)->count(),
                 'completedCourses' => $courses->where('progress', 100)->count(),
@@ -72,5 +80,27 @@ class DashboardController extends Controller
                 'overallProgress' => $courses->isNotEmpty() ? (int) round($courses->avg('progress')) : 0,
             ],
         ]);
+    }
+
+    /** @return array<string, int|string|null|bool> */
+    private function courseData(Course $course, int $courseProgress, bool $enrolled = true): array
+    {
+        $lessons = $course->modules->flatMap->lessons;
+
+        return [
+            'id' => $course->id,
+            'title' => $course->title,
+            'slug' => $course->slug,
+            'description' => $course->description,
+            'thumbnailPath' => $course->thumbnail_path,
+            'videoId' => $lessons->first()?->video_id,
+            'category' => $course->category,
+            'level' => $course->level,
+            'progress' => $courseProgress,
+            'lessonCount' => $lessons->count(),
+            'moduleCount' => $course->modules->count(),
+            'durationMinutes' => $course->estimated_duration_minutes ?: (int) ceil($lessons->sum('duration_seconds') / 60),
+            'enrolled' => $enrolled,
+        ];
     }
 }

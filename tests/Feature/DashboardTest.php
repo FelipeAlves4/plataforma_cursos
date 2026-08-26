@@ -65,4 +65,48 @@ class DashboardTest extends TestCase
             ->get('/dashboard')
             ->assertRedirect(route('admin.dashboard', absolute: false));
     }
+
+    public function test_dashboard_provides_course_discovery_and_editorial_learning_data(): void
+    {
+        $student = User::factory()->create();
+        $enrolledCourse = Course::query()->create([
+            'title' => 'Gestão de salão',
+            'slug' => 'gestao-de-salao',
+            'status' => CourseStatus::Published,
+            'category' => 'Gestão',
+            'estimated_duration_minutes' => 90,
+        ]);
+        $module = CourseModule::query()->create([
+            'course_id' => $enrolledCourse->id,
+            'title' => 'Atendimento',
+            'position' => 1,
+        ]);
+        $lesson = Lesson::query()->create([
+            'module_id' => $module->id,
+            'title' => 'Recepção do cliente',
+            'video_provider' => VideoProvider::YouTube,
+            'video_id' => 'dQw4w9WgXcQ',
+            'duration_seconds' => 600,
+            'position' => 1,
+        ]);
+        $recommendedCourse = Course::query()->create([
+            'title' => 'Operação de cozinha',
+            'slug' => 'operacao-de-cozinha',
+            'status' => CourseStatus::Published,
+        ]);
+        Enrollment::query()->create(['user_id' => $student->id, 'course_id' => $enrolledCourse->id]);
+
+        $this->actingAs($student)->get('/dashboard')
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Dashboard')
+                ->where('courses.0.lessonCount', 1)
+                ->where('courses.0.moduleCount', 1)
+                ->where('courses.0.videoId', $lesson->video_id)
+                ->where('continueLearning.lessonId', $lesson->id)
+                ->where('featuredCourses.0.id', $enrolledCourse->id)
+                ->where('newCourses.0.id', $recommendedCourse->id)
+                ->where('recommendedCourses.0.id', $recommendedCourse->id)
+                ->where('recommendedCourses.0.enrolled', false)
+            );
+    }
 }

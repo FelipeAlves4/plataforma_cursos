@@ -1,4 +1,5 @@
 import ProgressBar from '@/Components/ProgressBar';
+import LessonRow from '@/Components/LessonRow';
 import VideoPlayer from '@/Components/VideoPlayer';
 import AppLayout from '@/Layouts/AppLayout';
 import { Head, Link, router } from '@inertiajs/react';
@@ -15,7 +16,7 @@ type Lesson = {
     number: number;
 };
 
-type CourseLesson = { id: number; title: string; number: number; completed: boolean };
+type CourseLesson = { id: number; title: string; number: number; completed: boolean; videoId?: string | null; durationSeconds?: number | null };
 type Props = {
     lesson: Lesson;
     course: {
@@ -104,13 +105,7 @@ export default function Show({ lesson, course, navigation }: Props) {
                         <ProgressBar label="Progresso" value={progressPercentage} />
                     </div>
                     <div className="max-h-80 overflow-y-auto p-3 lg:max-h-[calc(100vh-18rem)]">
-                        {course.modules.length ? course.modules.map((module) => <section key={module.id} className="mb-4 last:mb-0"><div className="px-2 py-2"><p className="text-xs font-bold uppercase tracking-wider text-brand-700">Módulo {lessonNumber(module.position)}</p><h3 className="mt-1 text-sm font-black text-ink">{module.title}</h3></div><div className="space-y-1">{module.lessons.map((courseLesson) => {
-                            const isCurrent = courseLesson.id === lesson.id;
-                            const isCompleted = isCurrent ? completed : courseLesson.completed;
-                            const icon = isCompleted ? '✓' : isCurrent ? '▶' : '○';
-
-                            return <Link aria-current={isCurrent ? 'step' : undefined} className={`flex items-center gap-3 rounded-xl border px-3 py-3 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${isCurrent ? 'border-brand-300 bg-brand-100 font-bold text-ink shadow-sm' : isCompleted ? 'border-transparent text-brand-700 hover:bg-sand' : 'border-transparent text-ink/65 hover:bg-sand'}`} href={`/lessons/${courseLesson.id}`} key={courseLesson.id}><span aria-hidden className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-black ${isCurrent ? 'bg-brand-700 text-white' : isCompleted ? 'bg-brand-100 text-brand-700' : 'bg-sand text-ink/55'}`}>{icon}</span><span className="min-w-0 flex-1"><span className="mr-2 text-xs font-bold text-ink/45">{lessonNumber(courseLesson.number)}.</span><span>{courseLesson.title}</span></span></Link>;
-                        })}</div></section>) : <p className="px-3 py-6 text-center text-sm leading-6 text-ink/60">Este curso ainda não possui aulas disponíveis.</p>}
+                        {course.modules.length ? course.modules.map((module) => <section key={module.id} className="mb-4 last:mb-0"><div className="px-2 py-2"><p className="text-xs font-bold uppercase tracking-wider text-brand-700">Módulo {lessonNumber(module.position)}</p><h3 className="mt-1 text-sm font-black text-ink">{module.title}</h3></div><div className="space-y-1">{module.lessons.map((courseLesson) => <LessonRow compact completed={courseLesson.id === lesson.id ? completed : courseLesson.completed} current={courseLesson.id === lesson.id} durationSeconds={courseLesson.durationSeconds} id={courseLesson.id} key={courseLesson.id} number={courseLesson.number} title={courseLesson.title} videoId={courseLesson.videoId} />)}</div></section>) : <p className="px-3 py-6 text-center text-sm leading-6 text-ink/60">Este curso ainda não possui aulas disponíveis.</p>}
                     </div>
                 </aside>
             </div>

@@ -3,6 +3,7 @@ import { useState } from 'react';
 type Props = {
     className?: string;
     thumbnailPath?: string | null;
+    videoId?: string | null;
     title: string;
 };
 
@@ -16,14 +17,16 @@ function AsexPlaceholder({ className = '', title }: Pick<Props, 'className' | 't
     );
 }
 
-export default function CourseCover({ className = '', thumbnailPath, title }: Props) {
+export default function CourseCover({ className = '', thumbnailPath, title, videoId }: Props) {
     const [imageFailed, setImageFailed] = useState(false);
 
-    if (!thumbnailPath || imageFailed) {
+    const source = thumbnailPath
+        ? (/^https?:\/\//.test(thumbnailPath) ? thumbnailPath : `/storage/${thumbnailPath}`)
+        : videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
+
+    if (!source || imageFailed) {
         return <AsexPlaceholder className={className} title={title} />;
     }
 
-    const source = /^https?:\/\//.test(thumbnailPath) ? thumbnailPath : `/storage/${thumbnailPath}`;
-
-    return <img alt={`Capa do curso ${title}`} className={`h-full w-full object-cover ${className}`} onError={() => setImageFailed(true)} src={source} />;
+    return <img alt={`Capa do curso ${title}`} className={`h-full w-full object-cover ${className}`} loading="lazy" onError={() => setImageFailed(true)} src={source} />;
 }

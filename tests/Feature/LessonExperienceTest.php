@@ -93,6 +93,23 @@ class LessonExperienceTest extends TestCase
             );
     }
 
+    public function test_course_page_provides_visual_course_and_module_progress_data(): void
+    {
+        [$course, $firstLesson, $currentLesson] = $this->courseWithOrderedLessons();
+        $student = User::factory()->create();
+        Enrollment::query()->create(['user_id' => $student->id, 'course_id' => $course->id]);
+        LessonProgress::query()->create(['user_id' => $student->id, 'lesson_id' => $firstLesson->id, 'completed' => true]);
+
+        $this->actingAs($student)->get("/courses/{$course->slug}")
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Courses/Show')
+                ->where('course.lessonCount', 3)
+                ->where('course.moduleCount', 2)
+                ->where('course.modules.0.completedLessons', 1)
+                ->where('course.modules.0.lessons.1.videoId', $currentLesson->video_id)
+            );
+    }
+
     /** @return array{Course, Lesson, Lesson, Lesson} */
     private function courseWithOrderedLessons(): array
     {
