@@ -24,6 +24,52 @@
     .eyebrow { @apply text-xs font-bold uppercase tracking-[0.16em]; }
     .hero-glow { @apply absolute -right-48 -top-44 h-[36rem] w-[36rem] rounded-full bg-brand-500/25 blur-3xl; }
     .asex-gradient { background: var(--asex-gradient); }
+
+    .admin-shell .asex-gradient { background: #a855f7; }
+    .admin-shell .admin-nav-link { @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#B7AFC5] transition hover:bg-white/5 hover:text-white; }
+    .admin-shell .admin-nav-link-active { @apply bg-[#251735] text-[#F2EAFE] shadow-[inset_2px_0_0_#A855F7]; }
+    .admin-shell .admin-icon-button { @apply grid h-9 w-9 place-items-center rounded-lg border border-white/10 text-[#D7CFE3] transition hover:border-[#A855F7]/60 hover:bg-white/5 hover:text-white; }
+    .admin-shell .admin-eyebrow { @apply text-xs font-bold uppercase tracking-[0.16em] text-[#C084FC]; }
+    .admin-shell .admin-page-header { @apply flex flex-col gap-5 border-b border-white/10 pb-7 sm:flex-row sm:items-end sm:justify-between; }
+    .admin-shell .admin-page-header h1 { @apply mt-2 text-3xl font-black tracking-tight text-[#F7F2FF] sm:text-4xl; }
+    .admin-shell .admin-page-header p:not(.admin-eyebrow) { @apply mt-2 max-w-2xl text-sm leading-6 text-[#AAA0B9] sm:text-base; }
+    .admin-shell .admin-primary-button { @apply inline-flex w-fit shrink-0 items-center justify-center rounded-xl bg-[#A855F7] px-4 py-2.5 text-sm font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,.1),0_8px_24px_rgba(168,85,247,.18)] transition hover:bg-[#C084FC] focus-visible:ring-[#C084FC] focus-visible:ring-offset-[#08060D]; }
+    .admin-shell .admin-panel { @apply rounded-[14px] border border-[#2A2038] bg-[#120E1A]; }
+    .admin-shell .admin-panel-heading { @apply flex items-start justify-between gap-4 border-b border-white/10 px-5 py-5; }
+    .admin-shell .admin-panel-heading h2 { @apply font-black text-[#F7F2FF]; }
+    .admin-shell .admin-panel-heading p { @apply mt-1 text-sm text-[#AAA0B9]; }
+    .admin-shell .admin-metric-card { @apply rounded-[14px] border border-[#2A2038] bg-[#120E1A] px-5 py-5; }
+    .admin-shell .admin-metric-card p { @apply text-sm font-semibold text-[#B7AFC5]; }
+    .admin-shell .admin-metric-card strong { @apply mt-2 block text-4xl font-black tracking-tight text-[#F7F2FF]; }
+    .admin-shell .admin-metric-card span { @apply mt-2 block text-sm text-[#877D98]; }
+    .admin-shell .admin-status { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold; }
+    .admin-shell .admin-status::before { @apply h-1.5 w-1.5 rounded-full bg-current content-['']; }
+    .admin-shell .admin-status-published { @apply bg-emerald-400/10 text-emerald-300; }
+    .admin-shell .admin-status-draft { @apply bg-[#A855F7]/10 text-[#D8B4FE]; }
+    .admin-shell .admin-table { @apply w-full text-left text-sm; }
+    .admin-shell .admin-table th { @apply bg-[#0E0A14] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[#877D98]; }
+    .admin-shell .admin-table td { @apply border-t border-white/10 px-5 py-4 text-[#C8C0D3]; }
+    .admin-shell .admin-table tbody tr { @apply transition hover:bg-white/[0.025]; }
+    .admin-shell .admin-table-link { @apply font-bold text-[#F4F1FA] transition hover:text-[#D8B4FE]; }
+    .admin-shell .admin-text-link { @apply text-sm font-bold text-[#C084FC] transition hover:text-[#E9D5FF]; }
+    .admin-shell .admin-danger-link { @apply text-sm font-bold text-rose-300 transition hover:text-rose-200; }
+    .admin-shell .admin-empty-state { @apply grid min-h-40 place-items-center gap-3 px-5 py-10 text-center text-sm text-[#AAA0B9]; }
+    .admin-shell .admin-activity { @apply flex items-center gap-3 px-5 py-4 transition hover:bg-white/[0.025]; }
+    .admin-shell .admin-activity strong { @apply block truncate text-sm font-bold text-[#F4F1FA]; }
+    .admin-shell .admin-activity small { @apply mt-0.5 block truncate text-xs text-[#AAA0B9]; }
+    .admin-shell .admin-avatar { @apply grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#2A2038] text-sm font-black text-[#D8B4FE]; }
+
+    .admin-shell input, .admin-shell select, .admin-shell textarea { @apply border-[#3A2B4D] bg-[#0E0A14] text-[#F4F1FA] placeholder:text-[#776C87] focus:border-[#A855F7] focus:ring-[#A855F7]; }
+    .admin-shell .bg-white { background-color: #120e1a; }
+    .admin-shell .bg-sand { background-color: #1c1527; }
+    .admin-shell .border-asex-border { border-color: #2a2038; }
+    .admin-shell .text-ink { color: #f4f1fa; }
+    .admin-shell .text-ink\/65, .admin-shell .text-ink\/60, .admin-shell .text-ink\/55, .admin-shell .text-ink\/45 { color: #aaa0b9; }
+    .admin-shell .text-brand-700 { color: #c084fc; }
+    .admin-shell .hover\:bg-brand-100:hover { background-color: #251735; }
+    .admin-shell .hover\:bg-sand:hover { background-color: #251735; }
+    .admin-shell .focus\:border-brand-500:focus { border-color: #a855f7; }
+    .admin-shell .focus\:ring-brand-500:focus { --tw-ring-color: #a855f7; }
 }
 
 @media (prefers-reduced-motion: reduce) {
