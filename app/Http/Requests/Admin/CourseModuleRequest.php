@@ -15,7 +15,6 @@ class CourseModuleRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
-            'position' => ['required', 'integer', 'min:1'],
         ];
     }
 }

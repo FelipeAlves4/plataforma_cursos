@@ -14,7 +14,7 @@ class YouTubeUrlParser
         $path = trim($parts['path'] ?? '', '/');
 
         if (! in_array($host, ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be', 'www.youtu.be'], true)) {
-            throw new InvalidArgumentException('Informe uma URL válida do YouTube.');
+            throw new InvalidArgumentException('Não conseguimos identificar esse vídeo do YouTube. Confira o link e tente novamente.');
         }
 
         $id = null;
@@ -28,7 +28,7 @@ class YouTubeUrlParser
         }
 
         if (! is_string($id) || ! preg_match('/^[A-Za-z0-9_-]{11}$/', $id)) {
-            throw new InvalidArgumentException('Não foi possível identificar o vídeo do YouTube nessa URL.');
+            throw new InvalidArgumentException('Não conseguimos identificar esse vídeo do YouTube. Confira o link e tente novamente.');
         }
 
         return ['id' => $id, 'url' => "https://www.youtube.com/watch?v={$id}"];

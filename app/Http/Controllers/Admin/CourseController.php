@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\CourseStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreCourseRequest;
@@ -32,7 +33,10 @@ class CourseController extends Controller
 
     public function store(StoreCourseRequest $request): RedirectResponse
     {
-        $course = Course::query()->create($request->safe()->except('thumbnail'));
+        $course = Course::query()->create([
+            ...$request->safe()->except(['thumbnail', 'status']),
+            'status' => CourseStatus::Draft,
+        ]);
         $this->storeThumbnail($course, $request);
 
         return to_route('admin.courses.edit', $course)->with('success', 'Curso criado.');

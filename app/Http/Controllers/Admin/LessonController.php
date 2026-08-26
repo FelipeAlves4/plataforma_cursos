@@ -14,9 +14,16 @@ class LessonController extends Controller
 {
     public function store(LessonRequest $request, CourseModule $module): RedirectResponse
     {
-        $module->lessons()->create($request->validated());
+        DB::transaction(function () use ($module, $request): void {
+            CourseModule::query()->whereKey($module)->lockForUpdate()->firstOrFail();
 
-        return back()->with('success', 'Aula criada.');
+            $module->lessons()->create([
+                ...$request->validated(),
+                'position' => $module->lessons()->max('position') + 1,
+            ]);
+        });
+
+        return back()->with('success', 'Aula adicionada com sucesso.');
     }
 
     public function update(LessonRequest $request, Lesson $lesson): RedirectResponse
@@ -30,7 +37,7 @@ class LessonController extends Controller
     {
         $lesson->delete();
 
-        return back()->with('success', 'Aula excluída.');
+        return back()->with('success', 'Aula removida.');
     }
 
     public function reorder(Request $request, CourseModule $module): RedirectResponse

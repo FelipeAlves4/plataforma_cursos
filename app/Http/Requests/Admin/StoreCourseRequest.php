@@ -4,10 +4,18 @@ namespace App\Http\Requests\Admin;
 
 use App\Enums\CourseStatus;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class StoreCourseRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if (! $this->filled('slug') && $this->filled('title')) {
+            $this->merge(['slug' => Str::slug($this->string('title')->toString())]);
+        }
+    }
+
     public function authorize(): bool
     {
         return $this->user()?->isAdmin() ?? false;
@@ -23,7 +31,7 @@ class StoreCourseRequest extends FormRequest
             'level' => ['nullable', 'string', 'max:100'],
             'instructor_id' => ['nullable', 'integer', Rule::exists('users', 'id')],
             'estimated_duration_minutes' => ['nullable', 'integer', 'min:1'],
-            'status' => ['required', Rule::enum(CourseStatus::class)],
+            'status' => ['nullable', Rule::enum(CourseStatus::class)],
             'thumbnail' => ['nullable', 'image', 'max:3072'],
         ];
     }

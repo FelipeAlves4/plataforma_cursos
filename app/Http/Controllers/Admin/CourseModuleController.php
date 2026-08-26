@@ -14,9 +14,16 @@ class CourseModuleController extends Controller
 {
     public function store(CourseModuleRequest $request, Course $course): RedirectResponse
     {
-        $course->modules()->create($request->validated());
+        DB::transaction(function () use ($course, $request): void {
+            Course::query()->whereKey($course)->lockForUpdate()->firstOrFail();
 
-        return back()->with('success', 'Módulo criado.');
+            $course->modules()->create([
+                ...$request->validated(),
+                'position' => $course->modules()->max('position') + 1,
+            ]);
+        });
+
+        return back()->with('success', 'Módulo adicionado com sucesso.');
     }
 
     public function update(CourseModuleRequest $request, CourseModule $module): RedirectResponse
@@ -30,7 +37,7 @@ class CourseModuleController extends Controller
     {
         $module->delete();
 
-        return back()->with('success', 'Módulo excluído.');
+        return back()->with('success', 'Módulo removido.');
     }
 
     public function reorder(Request $request, Course $course): RedirectResponse

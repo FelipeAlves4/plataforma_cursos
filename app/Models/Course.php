@@ -16,6 +16,11 @@ class Course extends Model
 {
     use HasFactory;
 
+    /** @var array<string, string> */
+    protected $attributes = [
+        'status' => CourseStatus::Draft->value,
+    ];
+
     protected function casts(): array
     {
         return ['status' => CourseStatus::class];

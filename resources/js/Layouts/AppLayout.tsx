@@ -4,7 +4,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, useState } from 'react';
 
 export default function AppLayout({ children }: PropsWithChildren) {
-    const { auth } = usePage<PageProps>().props;
+    const { auth, flash } = usePage<PageProps>().props;
     const [menuOpen, setMenuOpen] = useState(false);
     const links = [
         { href: '/dashboard', label: 'Início' },
@@ -34,6 +34,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                 </div>
             </header>
             <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">{children}</main>
+            {flash?.success && <div aria-live="polite" className="fixed bottom-4 right-4 z-40 max-w-sm rounded-xl bg-ink px-5 py-4 text-sm font-semibold text-white shadow-xl">{flash.success}</div>}
         </div>
     );
 }
