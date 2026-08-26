@@ -2,23 +2,32 @@
 
 namespace Tests\Feature;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_profile_page_is_displayed(): void
+    public function test_student_profile_page_is_displayed(): void
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->get('/profile');
+        $this->actingAs($user)
+            ->get('/profile')
+            ->assertInertia(fn (Assert $page) => $page->component('Profile/Edit'));
+    }
 
-        $response->assertOk();
+    public function test_administrator_profile_page_is_displayed_without_changing_admin_access(): void
+    {
+        $administrator = User::factory()->create(['role' => UserRole::Admin]);
+
+        $this->actingAs($administrator)
+            ->get('/profile')
+            ->assertInertia(fn (Assert $page) => $page->component('Profile/Edit'));
     }
 
     public function test_profile_information_can_be_updated(): void
@@ -59,6 +68,48 @@ class ProfileTest extends TestCase
             ->assertRedirect('/profile');
 
         $this->assertNotNull($user->refresh()->email_verified_at);
+    }
+
+    public function test_professional_profile_information_can_be_updated(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => '11999999999',
+                'job_title' => 'Gerente',
+                'company' => 'Restaurante Exemplo',
+                'business_segment' => 'Restaurante',
+                'city' => 'São Paulo',
+                'state' => 'SP',
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $user->refresh();
+
+        $this->assertSame('Gerente', $user->job_title);
+        $this->assertSame('Restaurante Exemplo', $user->company);
+        $this->assertSame('SP', $user->state);
+    }
+
+    public function test_profile_information_requires_valid_personal_fields(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->from('/profile')
+            ->patch('/profile', [
+                'name' => '',
+                'email' => 'not-an-email',
+                'state' => 'São Paulo',
+            ])
+            ->assertSessionHasErrors(['name', 'email', 'state'])
+            ->assertRedirect('/profile');
+
+        $this->assertSame($user->name, $user->fresh()->name);
     }
 
     public function test_user_can_delete_their_account(): void

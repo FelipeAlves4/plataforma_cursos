@@ -11,11 +11,13 @@ export default function Modal({
     show = false,
     maxWidth = '2xl',
     closeable = true,
+    variant = 'default',
     onClose = () => {},
 }: PropsWithChildren<{
     show: boolean;
     maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
     closeable?: boolean;
+    variant?: 'default' | 'student';
     onClose: CallableFunction;
 }>) {
     const close = () => {
@@ -48,7 +50,7 @@ export default function Modal({
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="absolute inset-0 bg-gray-500/75" />
+                    <div className={variant === 'student' ? 'absolute inset-0 bg-[#09070d]/85 backdrop-blur-sm' : 'absolute inset-0 bg-gray-500/75'} />
                 </TransitionChild>
 
                 <TransitionChild
@@ -60,7 +62,7 @@ export default function Modal({
                     leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 >
                     <DialogPanel
-                        className={`mb-6 transform overflow-hidden rounded-lg bg-white shadow-xl transition-all sm:mx-auto sm:w-full ${maxWidthClass}`}
+                        className={`mb-6 transform overflow-hidden rounded-lg shadow-xl transition-all sm:mx-auto sm:w-full ${variant === 'student' ? 'border border-white/[0.12] bg-[#17111e] text-white' : 'bg-white'} ${maxWidthClass}`}
                     >
                         {children}
                     </DialogPanel>
