@@ -26,7 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
             explode(',', (string) Env::get('TRUSTED_PROXIES', '')),
         )));
 
-        if ($trustedProxies !== []) {
+        if ($trustedProxies === ['*']) {
+            $middleware->trustProxies(at: '*');
+        } elseif ($trustedProxies !== []) {
             $middleware->trustProxies(at: $trustedProxies);
         }
 
