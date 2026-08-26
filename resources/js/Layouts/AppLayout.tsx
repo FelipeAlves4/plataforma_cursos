@@ -6,18 +6,25 @@ import { PropsWithChildren, useState } from 'react';
 export default function AppLayout({ children }: PropsWithChildren) {
     const { auth, flash } = usePage<PageProps>().props;
     const [menuOpen, setMenuOpen] = useState(false);
-    const links = [
-        { href: '/dashboard', label: 'Início' },
-        { href: '/courses', label: 'Cursos' },
-        ...(auth.user.role === 'ADMIN' ? [{ href: '/admin', label: 'Administração' }] : []),
-    ];
+    const isAdmin = auth.user.role === 'ADMIN';
+    const homeHref = isAdmin ? '/admin' : '/dashboard';
+    const links = isAdmin
+        ? [
+            { href: '/admin', label: 'Visão geral' },
+            { href: '/admin/courses', label: 'Cursos' },
+            { href: '/courses', label: 'Catálogo' },
+        ]
+        : [
+            { href: '/dashboard', label: 'Início' },
+            { href: '/courses', label: 'Cursos' },
+        ];
 
     return (
         <div className="min-h-screen bg-cream text-ink">
             <header className="border-b border-white/10 bg-ink text-white">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 items-center justify-between gap-4">
-                        <BrandLogo href="/dashboard" className="h-10 w-36" />
+                        <BrandLogo href={homeHref} className="h-10 w-36" />
                         <nav aria-label="Navegação principal" className="hidden items-center gap-6 text-sm font-semibold md:flex">
                             {links.map((link) => <Link key={link.href} href={link.href} className="text-white/75 transition hover:text-white">{link.label}</Link>)}
                             <Link href="/profile" className="rounded-full bg-white/10 px-3 py-1.5 text-white transition hover:bg-white/20">{auth.user.name}</Link>

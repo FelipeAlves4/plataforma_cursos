@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\CourseStatus;
+use App\Enums\UserRole;
 use App\Enums\VideoProvider;
 use App\Models\Course;
 use App\Models\CourseModule;
@@ -54,5 +55,14 @@ class DashboardTest extends TestCase
                 ->where('continueLearning.lessonId', $nextLesson->id)
                 ->where('continueLearning.lessonTitle', 'Próxima aula')
             );
+    }
+
+    public function test_administrators_are_redirected_to_the_administration_dashboard(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+
+        $this->actingAs($admin)
+            ->get('/dashboard')
+            ->assertRedirect(route('admin.dashboard', absolute: false));
     }
 }

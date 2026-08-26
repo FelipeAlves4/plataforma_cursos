@@ -6,15 +6,21 @@ use App\Models\Enrollment;
 use App\Models\Lesson;
 use App\Models\LessonProgress;
 use App\Services\CourseProgressService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request, CourseProgressService $progress): Response
+    public function __invoke(Request $request, CourseProgressService $progress): Response|RedirectResponse
     {
         $user = $request->user();
+
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
         $enrollments = Enrollment::query()
             ->with(['course.modules.lessons'])
             ->whereBelongsTo($user)

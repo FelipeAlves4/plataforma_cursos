@@ -11,7 +11,7 @@ function AsexPlaceholder({ className = '', title }: Pick<Props, 'className' | 't
         <div aria-label={`Capa padrão do curso ${title}`} className={`relative flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br from-brand-700 via-brand-500 to-brand-400 p-6 text-white ${className}`} role="img">
             <span aria-hidden className="absolute -left-10 -top-12 h-36 w-36 rounded-full bg-white/10 blur-2xl" />
             <span aria-hidden className="absolute -bottom-16 -right-8 h-44 w-44 rounded-full border-2 border-white/15" />
-            <img alt="" aria-hidden className="relative h-auto w-[42%] min-w-[140px] max-w-[260px] object-contain" src="/brand/asex-educacao-logo-horizontal.png" />
+            <img alt="" aria-hidden className="relative h-auto w-[60%] min-w-[170px] max-w-[360px] object-contain" src="/brand/asex-educacao-logo-horizontal.png" />
         </div>
     );
 }
