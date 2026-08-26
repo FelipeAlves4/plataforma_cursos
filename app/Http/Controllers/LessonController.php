@@ -14,8 +14,11 @@ class LessonController extends Controller
     {
         $this->authorize('view', $lesson);
 
-        $lesson->load('module.course.modules.lessons');
+        $lesson->load(['module.course.instructor', 'module.course.modules.lessons']);
         $course = $lesson->module->course;
+
+        $orderedLessons = $course->modules->flatMap->lessons->values();
+        $lessonPositions = $orderedLessons->pluck('id')->flip();
 
         LessonProgress::query()->firstOrCreate(
             ['user_id' => $request->user()->id, 'lesson_id' => $lesson->id],
@@ -26,11 +29,13 @@ class LessonController extends Controller
         $completedLessonIds = LessonProgress::query()
             ->where('user_id', $request->user()->id)
             ->where('completed', true)
+            ->whereIn('lesson_id', $orderedLessons->pluck('id'))
             ->pluck('lesson_id')
             ->all();
 
-        $orderedLessons = $course->modules->flatMap->lessons->values();
         $position = $orderedLessons->search(fn ($item) => $item->id === $lesson->id);
+        $totalLessons = $orderedLessons->count();
+        $completedLessons = count($completedLessonIds);
 
         return Inertia::render('Lessons/Show', [
             'lesson' => [
@@ -42,17 +47,28 @@ class LessonController extends Controller
                 'videoUrl' => $lesson->video_url,
                 'durationSeconds' => $lesson->duration_seconds,
                 'completed' => in_array($lesson->id, $completedLessonIds, true),
+                'number' => $position !== false ? $position + 1 : 1,
             ],
             'course' => [
                 'title' => $course->title,
                 'slug' => $course->slug,
+                'instructor' => $course->instructor?->name,
+                'category' => $course->category,
+                'level' => $course->level,
+                'progress' => [
+                    'completedLessons' => $completedLessons,
+                    'totalLessons' => $totalLessons,
+                    'percentage' => $totalLessons > 0 ? (int) round(($completedLessons / $totalLessons) * 100) : 0,
+                ],
                 'modules' => $course->modules->map(fn ($module) => [
                     'id' => $module->id,
                     'title' => $module->title,
+                    'position' => $module->position,
                     'lessons' => $module->lessons->map(fn ($courseLesson) => [
                         'id' => $courseLesson->id,
                         'title' => $courseLesson->title,
                         'completed' => in_array($courseLesson->id, $completedLessonIds, true),
+                        'number' => $lessonPositions[$courseLesson->id] + 1,
                     ]),
                 ]),
             ],
