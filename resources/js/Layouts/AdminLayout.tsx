@@ -47,9 +47,9 @@ export default function AdminLayout({ children }: PropsWithChildren) {
     const [menuOpen, setMenuOpen] = useState(false);
 
     return <div className="admin-shell min-h-screen bg-[#08060D] text-[#F4F1FA]">
-        <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/10 bg-[#0D0913] lg:flex"><Navigation /></aside>
+        <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/10 bg-[#100C18] lg:flex"><Navigation /></aside>
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-white/10 bg-[#08060D]/95 px-4 backdrop-blur lg:hidden"><BrandLogo className="h-8 w-auto" href="/admin" /><button aria-expanded={menuOpen} aria-label="Abrir navegação administrativa" className="admin-icon-button" type="button" onClick={() => setMenuOpen(true)}><Icon name="menu" /></button></header>
-        {menuOpen && <div aria-label="Navegação administrativa" aria-modal="true" className="fixed inset-0 z-50 lg:hidden" role="dialog"><button aria-label="Fechar navegação" className="absolute inset-0 bg-black/65" type="button" onClick={() => setMenuOpen(false)} /><aside className="relative flex h-full w-72 flex-col border-r border-white/10 bg-[#0D0913] shadow-2xl"><button aria-label="Fechar navegação" className="admin-icon-button absolute right-3 top-4" type="button" onClick={() => setMenuOpen(false)}><Icon name="close" /></button><Navigation close={() => setMenuOpen(false)} /></aside></div>}
+        {menuOpen && <div aria-label="Navegação administrativa" aria-modal="true" className="fixed inset-0 z-50 lg:hidden" role="dialog"><button aria-label="Fechar navegação" className="absolute inset-0 bg-black/65" type="button" onClick={() => setMenuOpen(false)} /><aside className="relative flex h-full w-72 flex-col border-r border-white/10 bg-[#100C18] shadow-2xl"><button aria-label="Fechar navegação" className="admin-icon-button absolute right-3 top-4" type="button" onClick={() => setMenuOpen(false)}><Icon name="close" /></button><Navigation close={() => setMenuOpen(false)} /></aside></div>}
         <main className="mx-auto w-full max-w-[1600px] px-4 py-7 sm:px-6 lg:ml-64 lg:w-[calc(100%-16rem)] lg:px-10 lg:py-10">{children}</main>
     </div>;
 }

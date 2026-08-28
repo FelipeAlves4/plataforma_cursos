@@ -25,51 +25,89 @@
     .hero-glow { @apply absolute -right-48 -top-44 h-[36rem] w-[36rem] rounded-full bg-brand-500/25 blur-3xl; }
     .asex-gradient { background: var(--asex-gradient); }
 
-    .admin-shell .asex-gradient { background: #a855f7; }
+    .admin-shell {
+        --admin-background: #08060D;
+        --admin-sidebar: #100C18;
+        --admin-surface: #14101F;
+        --admin-elevated: #1A1527;
+        --admin-elevated-secondary: #221C31;
+        --admin-border-subtle: rgba(255, 255, 255, 0.08);
+        --admin-border-strong: rgba(255, 255, 255, 0.12);
+        --admin-text: #F8F7FB;
+        --admin-text-secondary: #C9C2D9;
+        --admin-text-muted: #9D93B8;
+        --admin-text-subtle: #7D7398;
+        --admin-purple: #6429AA;
+        --admin-purple-hover: #8138C5;
+        --admin-purple-light: #9347DD;
+    }
+    .admin-shell .asex-gradient { background: linear-gradient(135deg, var(--admin-purple) 0%, var(--admin-purple-light) 100%); box-shadow: 0 8px 24px rgba(100, 41, 170, 0.22); }
     .admin-shell .admin-nav-link { @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#B7AFC5] transition hover:bg-white/5 hover:text-white; }
-    .admin-shell .admin-nav-link-active { @apply bg-[#251735] text-[#F2EAFE] shadow-[inset_2px_0_0_#A855F7]; }
-    .admin-shell .admin-icon-button { @apply grid h-9 w-9 place-items-center rounded-lg border border-white/10 text-[#D7CFE3] transition hover:border-[#A855F7]/60 hover:bg-white/5 hover:text-white; }
-    .admin-shell .admin-eyebrow { @apply text-xs font-bold uppercase tracking-[0.16em] text-[#C084FC]; }
+    .admin-shell .admin-nav-link-active { @apply bg-[#221C31] text-[#F8F7FB] shadow-[inset_2px_0_0_#9347DD]; }
+    .admin-shell .admin-icon-button { @apply grid h-9 w-9 place-items-center rounded-lg border border-white/10 text-[#C9C2D9] transition hover:border-[#9347DD]/60 hover:bg-[#1A1527] hover:text-[#F8F7FB]; }
+    .admin-shell .admin-eyebrow { @apply text-xs font-bold uppercase tracking-[0.16em] text-[#9347DD]; }
     .admin-shell .admin-page-header { @apply flex flex-col gap-5 border-b border-white/10 pb-7 sm:flex-row sm:items-end sm:justify-between; }
-    .admin-shell .admin-page-header h1 { @apply mt-2 text-3xl font-black tracking-tight text-[#F7F2FF] sm:text-4xl; }
-    .admin-shell .admin-page-header p:not(.admin-eyebrow) { @apply mt-2 max-w-2xl text-sm leading-6 text-[#AAA0B9] sm:text-base; }
-    .admin-shell .admin-primary-button { @apply inline-flex w-fit shrink-0 items-center justify-center rounded-xl bg-[#A855F7] px-4 py-2.5 text-sm font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,.1),0_8px_24px_rgba(168,85,247,.18)] transition hover:bg-[#C084FC] focus-visible:ring-[#C084FC] focus-visible:ring-offset-[#08060D]; }
-    .admin-shell .admin-panel { @apply rounded-[14px] border border-[#2A2038] bg-[#120E1A]; }
+    .admin-shell .admin-page-header h1 { @apply mt-2 text-3xl font-black tracking-tight text-[#F8F7FB] sm:text-4xl; }
+    .admin-shell .admin-page-header p:not(.admin-eyebrow) { @apply mt-2 max-w-2xl text-sm leading-6 text-[#9D93B8] sm:text-base; }
+    .admin-shell .admin-primary-button { @apply inline-flex w-fit shrink-0 items-center justify-center rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,.1),0_8px_24px_rgba(100,41,170,.22)] transition hover:brightness-110 focus-visible:ring-[#9347DD] focus-visible:ring-offset-[#08060D]; background: linear-gradient(135deg, #6429AA 0%, #9347DD 100%); }
+    .admin-shell .admin-panel { @apply rounded-[14px] border border-white/10 bg-[#14101F]; }
     .admin-shell .admin-panel-heading { @apply flex items-start justify-between gap-4 border-b border-white/10 px-5 py-5; }
-    .admin-shell .admin-panel-heading h2 { @apply font-black text-[#F7F2FF]; }
-    .admin-shell .admin-panel-heading p { @apply mt-1 text-sm text-[#AAA0B9]; }
-    .admin-shell .admin-metric-card { @apply rounded-[14px] border border-[#2A2038] bg-[#120E1A] px-5 py-5; }
-    .admin-shell .admin-metric-card p { @apply text-sm font-semibold text-[#B7AFC5]; }
-    .admin-shell .admin-metric-card strong { @apply mt-2 block text-4xl font-black tracking-tight text-[#F7F2FF]; }
-    .admin-shell .admin-metric-card span { @apply mt-2 block text-sm text-[#877D98]; }
+    .admin-shell .admin-panel-heading h2 { @apply font-black text-[#F8F7FB]; }
+    .admin-shell .admin-panel-heading p { @apply mt-1 text-sm text-[#9D93B8]; }
+    .admin-shell .admin-metric-card { @apply rounded-[14px] border border-white/10 bg-[#14101F] px-5 py-5; }
+    .admin-shell .admin-metric-card p { @apply text-sm font-semibold text-[#C9C2D9]; }
+    .admin-shell .admin-metric-card strong { @apply mt-2 block text-4xl font-black tracking-tight text-[#F8F7FB]; }
+    .admin-shell .admin-metric-card span { @apply mt-2 block text-sm text-[#7D7398]; }
     .admin-shell .admin-status { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold; }
     .admin-shell .admin-status::before { @apply h-1.5 w-1.5 rounded-full bg-current content-['']; }
     .admin-shell .admin-status-published { @apply bg-emerald-400/10 text-emerald-300; }
-    .admin-shell .admin-status-draft { @apply bg-[#A855F7]/10 text-[#D8B4FE]; }
+    .admin-shell .admin-status-draft { @apply bg-amber-300/10 text-amber-200; }
     .admin-shell .admin-table { @apply w-full text-left text-sm; }
-    .admin-shell .admin-table th { @apply bg-[#0E0A14] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[#877D98]; }
-    .admin-shell .admin-table td { @apply border-t border-white/10 px-5 py-4 text-[#C8C0D3]; }
+    .admin-shell .admin-table th { @apply bg-[#100C18] px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-[#7D7398]; }
+    .admin-shell .admin-table td { @apply border-t border-white/10 px-5 py-4 text-[#C9C2D9]; }
     .admin-shell .admin-table tbody tr { @apply transition hover:bg-white/[0.025]; }
-    .admin-shell .admin-table-link { @apply font-bold text-[#F4F1FA] transition hover:text-[#D8B4FE]; }
+    .admin-shell .admin-table-link { @apply font-bold text-[#F8F7FB] transition hover:text-[#D8B4FE]; }
     .admin-shell .admin-text-link { @apply text-sm font-bold text-[#C084FC] transition hover:text-[#E9D5FF]; }
-    .admin-shell .admin-danger-link { @apply text-sm font-bold text-rose-300 transition hover:text-rose-200; }
-    .admin-shell .admin-empty-state { @apply grid min-h-40 place-items-center gap-3 px-5 py-10 text-center text-sm text-[#AAA0B9]; }
+    .admin-shell .admin-danger-link { @apply rounded-lg px-2 py-1 text-sm font-bold text-[#F87171] transition hover:bg-[#F87171]/10 hover:text-[#FCA5A5]; }
+    .admin-shell .admin-empty-state { @apply grid min-h-40 place-items-center gap-3 px-5 py-10 text-center text-sm text-[#9D93B8]; }
     .admin-shell .admin-activity { @apply flex items-center gap-3 px-5 py-4 transition hover:bg-white/[0.025]; }
-    .admin-shell .admin-activity strong { @apply block truncate text-sm font-bold text-[#F4F1FA]; }
-    .admin-shell .admin-activity small { @apply mt-0.5 block truncate text-xs text-[#AAA0B9]; }
-    .admin-shell .admin-avatar { @apply grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#2A2038] text-sm font-black text-[#D8B4FE]; }
+    .admin-shell .admin-activity strong { @apply block truncate text-sm font-bold text-[#F8F7FB]; }
+    .admin-shell .admin-activity small { @apply mt-0.5 block truncate text-xs text-[#9D93B8]; }
+    .admin-shell .admin-avatar { @apply grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#221C31] text-sm font-black text-[#D8B4FE]; }
 
-    .admin-shell input, .admin-shell select, .admin-shell textarea { @apply border-[#3A2B4D] bg-[#0E0A14] text-[#F4F1FA] placeholder:text-[#776C87] focus:border-[#A855F7] focus:ring-[#A855F7]; }
-    .admin-shell .bg-white { background-color: #120e1a; }
-    .admin-shell .bg-sand { background-color: #1c1527; }
-    .admin-shell .border-asex-border { border-color: #2a2038; }
-    .admin-shell .text-ink { color: #f4f1fa; }
-    .admin-shell .text-ink\/65, .admin-shell .text-ink\/60, .admin-shell .text-ink\/55, .admin-shell .text-ink\/45 { color: #aaa0b9; }
-    .admin-shell .text-brand-700 { color: #c084fc; }
-    .admin-shell .hover\:bg-brand-100:hover { background-color: #251735; }
-    .admin-shell .hover\:bg-sand:hover { background-color: #251735; }
-    .admin-shell .focus\:border-brand-500:focus { border-color: #a855f7; }
-    .admin-shell .focus\:ring-brand-500:focus { --tw-ring-color: #a855f7; }
+    .admin-shell input, .admin-shell select, .admin-shell textarea { @apply border-white/10 bg-[#100C18] text-[#F8F7FB] placeholder:text-[#7D7398] focus:border-[#9347DD] focus:ring-[#9347DD]; }
+    .admin-shell .bg-white { background-color: #14101F; }
+    .admin-shell .bg-sand { background-color: #1A1527; }
+    .admin-shell .border-asex-border { border-color: rgba(255, 255, 255, 0.08); }
+    .admin-shell .text-ink { color: #F8F7FB; }
+    .admin-shell .text-ink\/65, .admin-shell .text-ink\/60, .admin-shell .text-ink\/55, .admin-shell .text-ink\/45 { color: #9D93B8; }
+    .admin-shell .text-brand-700 { color: #C084FC; }
+    .admin-shell .hover\:bg-brand-100:hover, .admin-shell .hover\:bg-sand:hover { background-color: #221C31; }
+    .admin-shell .focus\:border-brand-500:focus { border-color: #9347DD; }
+    .admin-shell .focus\:ring-brand-500:focus { --tw-ring-color: #9347DD; }
+
+    .admin-shell .admin-builder-card { @apply rounded-2xl border border-white/10 bg-[#14101F] shadow-[0_12px_32px_rgba(0,0,0,.12)]; }
+    .admin-shell .admin-module-card { @apply overflow-hidden rounded-2xl border border-white/10 bg-[#14101F] shadow-[0_12px_30px_rgba(0,0,0,.16)]; }
+    .admin-shell .admin-module-header { @apply flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-[#1A1527] px-4 py-4 sm:px-6; }
+    .admin-shell .admin-module-label { @apply text-xs font-bold uppercase tracking-[0.16em] text-[#9347DD]; }
+    .admin-shell .admin-module-title { @apply mt-1 text-lg font-black text-[#F8F7FB]; }
+    .admin-shell .admin-module-meta { @apply mt-1 text-sm text-[#9D93B8]; }
+    .admin-shell .admin-lesson-row { @apply flex flex-col gap-4 bg-[#100C18] px-4 py-4 transition hover:bg-[#14101F] sm:flex-row sm:items-center sm:justify-between sm:px-6; }
+    .admin-shell .admin-order-button { @apply grid h-9 w-9 place-items-center rounded-lg border border-white/10 bg-[#14101F] text-sm font-black text-[#C9C2D9] transition hover:border-white/20 hover:bg-[#221C31] hover:text-[#F8F7FB] disabled:cursor-not-allowed disabled:opacity-40; }
+    .admin-shell .admin-edit-button { @apply rounded-lg px-3 py-2 text-sm font-bold text-[#C084FC] transition hover:bg-[#6429AA]/15 hover:text-[#E9D5FF]; }
+    .admin-shell .admin-delete-button { @apply rounded-lg px-3 py-2 text-sm font-bold text-[#F87171] transition hover:bg-[#F87171]/10 hover:text-[#FCA5A5]; }
+    .admin-shell .admin-secondary-button { @apply rounded-lg border border-white/10 bg-[#1A1527] px-4 py-2.5 text-sm font-bold text-[#F8F7FB] transition hover:border-white/20 hover:bg-[#221C31] disabled:opacity-50; }
+    .admin-shell .admin-add-lesson { @apply rounded-lg px-3 py-2 text-sm font-bold text-[#C084FC] transition hover:bg-[#6429AA]/15 hover:text-[#E9D5FF]; }
+    .admin-shell .admin-lesson-icon { @apply grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#6429AA]/20 text-[#C084FC]; }
+    .admin-shell .admin-status-builder-draft { @apply bg-amber-300/10 text-amber-200; }
+    .admin-shell nav[aria-label='Seções do curso'] { @apply flex gap-1 overflow-x-auto border-b border-white/10; }
+    .admin-shell nav[aria-label='Seções do curso'] > * { @apply whitespace-nowrap border-b-2 border-transparent px-4 py-3 text-sm font-bold text-[#C9C2D9] transition hover:text-[#F8F7FB]; }
+    .admin-shell nav[aria-label='Seções do curso'] > .border-brand-700 { @apply border-[#9347DD] text-[#F8F7FB]; }
+    .admin-shell main > div:first-child > div > span[class~='rounded-full'][class~='bg-sand'] { background-color: rgba(252, 211, 77, 0.1); color: #FDE68A; }
+    .admin-shell .bg-asex-success\/10 { background-color: rgba(52, 211, 153, 0.12); }
+    .admin-shell .text-asex-success { color: #6EE7B7; }
+    .admin-shell .bg-rose-700 { background-color: #F87171; }
+    .admin-shell .hover\:bg-rose-800:hover { background-color: #EF4444; }
 }
 
 @media (prefers-reduced-motion: reduce) {
