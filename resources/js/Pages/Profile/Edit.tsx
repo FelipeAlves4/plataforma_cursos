@@ -1,3 +1,4 @@
+import AdminLayout from '@/Layouts/AdminLayout';
 import AppLayout from '@/Layouts/AppLayout';
 import StudentLayout from '@/Layouts/StudentLayout';
 import { PageProps } from '@/types';
@@ -28,6 +29,21 @@ function StudentProfile({ mustVerifyEmail, status }: Props) {
     </StudentLayout>;
 }
 
+function AdminProfile({ mustVerifyEmail, status }: Props) {
+    const user = usePage<PageProps>().props.auth.user;
+    const professionalDetails = [user.job_title, user.company].filter(Boolean).join(' · ');
+
+    return <AdminLayout><Head title="Meu perfil" />
+        <section className="admin-page-header"><div><p className="admin-eyebrow">Administração / Conta</p><h1>Meu perfil</h1><p>Gerencie seus dados pessoais, profissionais e informações de acesso.</p></div></section>
+        <section className="admin-panel mt-8 flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:p-6"><Avatar avatarPath={user.avatar_path} name={user.name} /><div className="min-w-0"><div className="flex flex-wrap items-center gap-3"><h2 className="truncate text-2xl font-black tracking-tight text-[#F8F7FB]">{user.name}</h2><span className="inline-flex items-center rounded-full bg-[#6429AA]/15 px-2.5 py-1 text-xs font-bold text-[#D8B4FE]">Administrador</span></div><p className="mt-1 truncate text-sm text-[#C9C2D9] sm:text-base">{user.email}</p>{professionalDetails && <p className="mt-3 text-sm font-medium text-[#9D93B8]">{professionalDetails}</p>}</div></section>
+        <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,.62fr)]"><UpdateProfileInformationForm className="admin-panel p-5 sm:p-6" mustVerifyEmail={mustVerifyEmail} status={status} variant="admin" /><div className="space-y-6"><UpdatePasswordForm className="admin-panel p-5 sm:p-6" variant="admin" /><DeleteUserForm className="rounded-[14px] border border-[#F87171]/20 bg-[#14101F] p-5 sm:p-6" variant="admin" /></div></div>
+    </AdminLayout>;
+}
+
+function DefaultProfile({ mustVerifyEmail, status }: Props) {
+    return <AppLayout><Head title="Meu perfil" /><div className="mx-auto max-w-3xl"><UpdateProfileInformationForm mustVerifyEmail={mustVerifyEmail} status={status} className="rounded-2xl bg-white p-7 shadow-sm" /><div className="mt-6 rounded-2xl bg-white p-7 shadow-sm"><UpdatePasswordForm className="max-w-xl" /></div><div className="mt-6 rounded-2xl bg-white p-7 shadow-sm"><DeleteUserForm className="max-w-xl" /></div></div></AppLayout>;
+}
+
 export default function Edit({ mustVerifyEmail, status }: Props) {
     const user = usePage<PageProps>().props.auth.user;
 
@@ -35,5 +51,9 @@ export default function Edit({ mustVerifyEmail, status }: Props) {
         return <StudentProfile mustVerifyEmail={mustVerifyEmail} status={status} />;
     }
 
-    return <AppLayout><Head title="Meu perfil" /><div className="mx-auto max-w-3xl"><UpdateProfileInformationForm mustVerifyEmail={mustVerifyEmail} status={status} className="rounded-2xl bg-white p-7 shadow-sm" /><div className="mt-6 rounded-2xl bg-white p-7 shadow-sm"><UpdatePasswordForm className="max-w-xl" /></div><div className="mt-6 rounded-2xl bg-white p-7 shadow-sm"><DeleteUserForm className="max-w-xl" /></div></div></AppLayout>;
+    if (user.role === 'ADMIN') {
+        return <AdminProfile mustVerifyEmail={mustVerifyEmail} status={status} />;
+    }
+
+    return <DefaultProfile mustVerifyEmail={mustVerifyEmail} status={status} />;
 }
