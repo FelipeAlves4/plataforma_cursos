@@ -216,18 +216,45 @@ class CourseBuilderTest extends TestCase
             );
     }
 
-    public function test_catalog_returns_the_youtube_fallback_data_when_course_has_no_cover(): void
+    public function test_catalog_returns_the_asex_cover_data_when_course_has_no_cover(): void
     {
         $course = $this->course();
-        $lesson = $this->lesson($this->module($course));
+        $this->lesson($this->module($course));
         $course->update(['status' => CourseStatus::Published]);
         $student = User::factory()->create(['role' => UserRole::Student]);
 
         $this->actingAs($student)->get('/courses')
             ->assertInertia(fn (Assert $page) => $page
                 ->where('courses.0.thumbnailPath', null)
-                ->where('courses.0.videoId', $lesson->video_id)
+                ->missing('courses.0.videoId')
             );
+    }
+
+    public function test_admin_can_preview_a_draft_course_without_creating_enrollment_or_progress(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+        $course = $this->course();
+        $lesson = $this->lesson($this->module($course));
+
+        $this->actingAs($admin)->get("/admin/courses/{$course->id}/preview")
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Lessons/Show')
+                ->where('lesson.id', $lesson->id)
+                ->where('course.progress.completedLessons', 0)
+                ->where('preview.returnUrl', route('admin.courses.edit', $course))
+                ->where('preview.baseUrl', route('admin.courses.preview', $course))
+            );
+
+        $this->assertDatabaseCount('enrollments', 0);
+        $this->assertDatabaseCount('lesson_progress', 0);
+    }
+
+    public function test_student_cannot_access_course_preview(): void
+    {
+        $student = User::factory()->create(['role' => UserRole::Student]);
+        $course = $this->course();
+
+        $this->actingAs($student)->get("/admin/courses/{$course->id}/preview")->assertForbidden();
     }
 
     private function course(): Course

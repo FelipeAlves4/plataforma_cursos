@@ -9,15 +9,14 @@ type Props = {
     courseTitle: string;
     courseSlug: string;
     thumbnailPath?: string | null;
-    videoId?: string | null;
     progress: number;
 };
 
-export default function ContinueLearningCard({ lessonId, lessonTitle, moduleTitle, courseTitle, courseSlug, thumbnailPath, videoId, progress }: Props) {
+export default function ContinueLearningCard({ lessonId, lessonTitle, moduleTitle, courseTitle, courseSlug, thumbnailPath, progress }: Props) {
     return (
         <section className="group overflow-hidden rounded-2xl border border-white/[0.1] bg-[#17111e] text-white shadow-2xl shadow-black/20 md:grid md:grid-cols-[minmax(19rem,.95fr)_minmax(0,1.05fr)]">
             <div className="relative aspect-[16/9] min-h-56 overflow-hidden md:aspect-auto">
-                <CourseCover thumbnailPath={thumbnailPath} title={courseTitle} videoId={videoId} />
+                <CourseCover thumbnailPath={thumbnailPath} title={courseTitle} />
                 <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-transparent to-[#17111e]/65" />
             </div>
             <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">

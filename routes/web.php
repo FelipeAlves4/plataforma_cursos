@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\CourseController as AdminCourseController;
 use App\Http\Controllers\Admin\CourseModuleController as AdminCourseModuleController;
+use App\Http\Controllers\Admin\CoursePreviewController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\LessonController as AdminLessonController;
 use App\Http\Controllers\Admin\StudentController as AdminStudentController;
@@ -21,6 +22,7 @@ Route::get('/dashboard', DashboardController::class)
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
+    Route::get('/my-courses', [CourseController::class, 'myCourses'])->name('courses.my');
     Route::get('/courses/{course:slug}', [CourseController::class, 'show'])->name('courses.show');
     Route::get('/lessons/{lesson}', [LessonController::class, 'show'])->name('lessons.show');
     Route::put('/lessons/{lesson}/progress', [LessonProgressController::class, 'update'])
@@ -33,6 +35,7 @@ Route::prefix('admin')
     ->group(function (): void {
         Route::get('/', AdminDashboardController::class)->name('dashboard');
         Route::resource('courses', AdminCourseController::class)->except('show');
+        Route::get('courses/{course}/preview', CoursePreviewController::class)->name('courses.preview');
         Route::post('courses/{course}/modules', [AdminCourseModuleController::class, 'store'])->name('courses.modules.store');
         Route::put('courses/{course}/modules/reorder', [AdminCourseModuleController::class, 'reorder'])->name('courses.modules.reorder');
         Route::put('modules/{module}', [AdminCourseModuleController::class, 'update'])->name('modules.update');

@@ -4,7 +4,6 @@ type Course = {
     title: string;
     slug: string;
     thumbnailPath?: string | null;
-    videoId?: string | null;
     category?: string | null;
     level?: string | null;
     progress: number;

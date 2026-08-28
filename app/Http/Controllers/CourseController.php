@@ -17,7 +17,6 @@ class CourseController extends Controller
             'search' => ['nullable', 'string', 'max:100'],
             'category' => ['nullable', 'string', 'max:100'],
             'level' => ['nullable', 'string', 'max:100'],
-            'status' => ['nullable', 'in:not_started,in_progress,completed'],
         ]);
         $user = $request->user();
         $query = Course::query()->published()->with(['instructor', 'modules.lessons'])->withCount('lessons');
@@ -31,25 +30,55 @@ class CourseController extends Controller
         $enrolledCourses = $courseCollection->whereIn('id', $enrolledIds);
         $courseProgress = $progress->percentagesFor($user, $enrolledCourses);
         $courses = $courseCollection->map(function (Course $course) use ($enrolledIds, $courseProgress): array {
-            $percentage = $courseProgress[$course->id] ?? 0;
-            $status = $percentage === 100 ? 'completed' : ($percentage > 0 ? 'in_progress' : 'not_started');
+            $enrolled = in_array($course->id, $enrolledIds, true);
+            $percentage = $enrolled ? ($courseProgress[$course->id] ?? 0) : 0;
+            $status = ! $enrolled ? 'available' : ($percentage === 100 ? 'completed' : ($percentage > 0 ? 'in_progress' : 'not_started'));
 
             return [
                 'id' => $course->id, 'title' => $course->title, 'slug' => $course->slug,
                 'description' => $course->description, 'thumbnailPath' => $course->thumbnail_path,
-                'videoId' => $course->modules->flatMap->lessons->first()?->video_id,
                 'category' => $course->category, 'level' => $course->level,
                 'instructor' => $course->instructor?->name, 'lessonCount' => $course->lessons_count,
                 'durationMinutes' => $course->estimated_duration_minutes,
-                'enrolled' => in_array($course->id, $enrolledIds, true), 'progress' => $percentage, 'status' => $status,
+                'enrolled' => $enrolled, 'progress' => $percentage, 'status' => $status,
             ];
-        })->when($filters['status'] ?? null, fn ($items, $status) => $items->where('status', $status))->values();
+        })->values();
 
         return Inertia::render('Courses/Index', [
             'courses' => $courses,
             'filters' => $filters,
             'categories' => Course::query()->published()->whereNotNull('category')->distinct()->orderBy('category')->pluck('category')->values(),
             'levels' => Course::query()->published()->whereNotNull('level')->distinct()->orderBy('level')->pluck('level')->values(),
+        ]);
+    }
+
+    public function myCourses(Request $request, CourseProgressService $progress): Response
+    {
+        $enrolledCourses = $request->user()->enrollments()
+            ->with(['course.instructor', 'course.modules.lessons'])
+            ->whereHas('course', fn ($query) => $query->published())
+            ->latest('enrolled_at')
+            ->get()
+            ->pluck('course')
+            ->values();
+        $courseProgress = $progress->detailsFor($request->user(), $enrolledCourses);
+
+        return Inertia::render('Courses/MyCourses', [
+            'courses' => $enrolledCourses->map(function (Course $course) use ($courseProgress): array {
+                $details = $courseProgress[$course->id] ?? ['completedLessons' => 0, 'totalLessons' => 0, 'percentage' => 0];
+                $status = $details['percentage'] === 100 ? 'completed' : ($details['percentage'] > 0 ? 'in_progress' : 'not_started');
+
+                return [
+                    'id' => $course->id,
+                    'title' => $course->title,
+                    'slug' => $course->slug,
+                    'thumbnailPath' => $course->thumbnail_path,
+                    'lessonCount' => $details['totalLessons'],
+                    'completedLessonCount' => $details['completedLessons'],
+                    'progress' => $details['percentage'],
+                    'status' => $status,
+                ];
+            }),
         ]);
     }
 
@@ -74,7 +103,6 @@ class CourseController extends Controller
                 'slug' => $course->slug,
                 'description' => $course->description,
                 'thumbnailPath' => $course->thumbnail_path,
-                'videoId' => $course->modules->flatMap->lessons->first()?->video_id,
                 'progress' => $progress->percentageFor($request->user(), $course),
                 'category' => $course->category,
                 'level' => $course->level,

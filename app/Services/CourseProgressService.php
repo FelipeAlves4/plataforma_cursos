@@ -14,9 +14,9 @@ class CourseProgressService
 {
     /**
      * @param  Collection<int, Course>  $courses
-     * @return array<int, int>
+     * @return array<int, array{completedLessons: int, totalLessons: int, percentage: int}>
      */
-    public function percentagesFor(User $user, Collection $courses): array
+    public function detailsFor(User $user, Collection $courses): array
     {
         $courseIds = $courses->pluck('id')->all();
 
@@ -43,11 +43,25 @@ class CourseProgressService
 
         return collect($courseIds)->mapWithKeys(function (int $courseId) use ($lessonCounts, $completedCounts): array {
             $totalLessons = $lessonCounts[$courseId] ?? 0;
+            $completedLessons = (int) ($completedCounts[$courseId] ?? 0);
 
-            return [$courseId => $totalLessons > 0
-                ? (int) round((($completedCounts[$courseId] ?? 0) / $totalLessons) * 100)
-                : 0];
+            return [$courseId => [
+                'completedLessons' => $completedLessons,
+                'totalLessons' => $totalLessons,
+                'percentage' => $totalLessons > 0 ? (int) round(($completedLessons / $totalLessons) * 100) : 0,
+            ]];
         })->all();
+    }
+
+    /**
+     * @param  Collection<int, Course>  $courses
+     * @return array<int, int>
+     */
+    public function percentagesFor(User $user, Collection $courses): array
+    {
+        return collect($this->detailsFor($user, $courses))
+            ->mapWithKeys(fn (array $details, int $courseId): array => [$courseId => $details['percentage']])
+            ->all();
     }
 
     public function percentageFor(User $user, Course $course): int

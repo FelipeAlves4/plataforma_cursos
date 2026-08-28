@@ -116,7 +116,7 @@ class DashboardTest extends TestCase
                 ->component('Dashboard')
                 ->where('courses.0.lessonCount', 1)
                 ->where('courses.0.moduleCount', 1)
-                ->where('courses.0.videoId', $lesson->video_id)
+                ->missing('courses.0.videoId')
                 ->where('continueLearning.lessonId', $lesson->id)
                 ->where('featuredCourses.0.id', $enrolledCourse->id)
                 ->where('newCourses.0.id', $recommendedCourse->id)

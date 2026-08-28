@@ -3,7 +3,6 @@ import { useState } from 'react';
 type Props = {
     className?: string;
     thumbnailPath?: string | null;
-    videoId?: string | null;
     title: string;
 };
 
@@ -18,12 +17,12 @@ function AsexPlaceholder({ className = '', title }: Pick<Props, 'className' | 't
     );
 }
 
-export default function CourseCover({ className = '', thumbnailPath, title, videoId }: Props) {
+export default function CourseCover({ className = '', thumbnailPath, title }: Props) {
     const [imageFailed, setImageFailed] = useState(false);
 
     const source = thumbnailPath
         ? (/^https?:\/\//.test(thumbnailPath) ? thumbnailPath : `/storage/${thumbnailPath}`)
-        : videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
+        : null;
 
     if (!source || imageFailed) {
         return <AsexPlaceholder className={className} title={title} />;
