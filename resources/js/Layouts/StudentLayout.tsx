@@ -32,18 +32,18 @@ export default function StudentLayout({ children }: PropsWithChildren) {
             <aside className="fixed inset-y-0 left-0 z-30 hidden w-[104px] flex-col border-r border-white/[0.09] bg-[#0c0911]/85 px-3 py-7 backdrop-blur-xl lg:flex">
                 <Link aria-label="ASEX — início" className="mx-auto" href="/dashboard"><BrandLogo className="h-9 w-16 object-contain" /></Link>
                 <nav aria-label="Navegação do aluno" className="mt-12 space-y-3">
-                    {links.map((link) => <Link className={`group flex flex-col items-center gap-2 rounded-xl px-2 py-3 text-[11px] font-medium transition duration-200 ${link.active ? 'bg-white/[0.08] text-[#c28aff]' : 'text-white/50 hover:bg-white/[0.05] hover:text-white'}`} href={link.href} key={link.label}><Icon name={link.icon} /><span className="text-center leading-3">{link.label}</span></Link>)}
+                    {links.map((link) => <Link className={`group flex flex-col items-center gap-2 rounded-xl px-2 py-3 text-[11px] font-medium transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c28aff] ${link.active ? 'bg-white/[0.08] text-[#c28aff]' : 'text-white/65 hover:bg-white/[0.05] hover:text-white'}`} href={link.href} key={link.label}><Icon name={link.icon} /><span className="text-center leading-3">{link.label}</span></Link>)}
                 </nav>
                 <div className="mt-auto space-y-3">
-                    <Link className="flex flex-col items-center gap-2 rounded-xl px-2 py-3 text-[11px] font-medium text-white/50 transition hover:bg-white/[0.05] hover:text-white" href="/profile"><span className="grid h-8 w-8 place-items-center rounded-full bg-[linear-gradient(135deg,#6429aa,#9347dd)] text-xs font-black text-white">{auth.user.name.charAt(0).toUpperCase()}</span><span className="max-w-[80px] truncate">{auth.user.name}</span></Link>
-                    <Link as="button" className="flex w-full flex-col items-center gap-2 rounded-xl px-2 py-3 text-[11px] font-medium text-white/40 transition hover:bg-white/[0.05] hover:text-white" href="/logout" method="post"><Icon name="logout" /><span>Sair</span></Link>
+                    <Link className="flex flex-col items-center gap-2 rounded-xl px-2 py-3 text-[11px] font-medium text-white/65 transition hover:bg-white/[0.05] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c28aff]" href="/profile"><span className="grid h-8 w-8 place-items-center rounded-full bg-[linear-gradient(135deg,#6429aa,#9347dd)] text-xs font-black text-white">{auth.user.name.charAt(0).toUpperCase()}</span><span className="max-w-[80px] truncate">{auth.user.name}</span></Link>
+                    <Link as="button" className="flex w-full flex-col items-center gap-2 rounded-xl px-2 py-3 text-[11px] font-medium text-white/65 transition hover:bg-white/[0.05] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c28aff]" href="/logout" method="post"><Icon name="logout" /><span>Sair</span></Link>
                 </div>
             </aside>
 
             <main className="relative mx-auto w-full max-w-[1680px] px-5 pb-28 pt-6 sm:px-8 sm:pt-9 lg:ml-[104px] lg:w-[calc(100%-104px)] lg:px-12 lg:pb-12 xl:px-16">{children}</main>
 
             <nav aria-label="Navegação móvel do aluno" className="fixed inset-x-0 bottom-0 z-30 flex h-[76px] items-center justify-around border-t border-white/[0.09] bg-[#0c0911]/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
-                {links.map((link) => <Link className={`flex min-h-14 min-w-14 flex-col items-center justify-center gap-1 rounded-xl px-2 text-[11px] font-medium transition ${link.active ? 'text-[#b875ff]' : 'text-white/45'}`} href={link.href} key={link.label}><Icon name={link.icon} /><span>{link.label}</span></Link>)}
+                {links.map((link) => <Link className={`flex min-h-14 min-w-14 flex-col items-center justify-center gap-1 rounded-xl px-2 text-[11px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c28aff] ${link.active ? 'text-[#b875ff]' : 'text-white/65'}`} href={link.href} key={link.label}><Icon name={link.icon} /><span>{link.label}</span></Link>)}
             </nav>
             {flash?.success && <div aria-live="polite" className="fixed bottom-24 right-4 z-40 max-w-sm rounded-xl border border-white/10 bg-[#1c1425] px-5 py-4 text-sm font-semibold text-white shadow-2xl lg:bottom-6">{flash.success}</div>}
         </div>
