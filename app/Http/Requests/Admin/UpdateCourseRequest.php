@@ -36,7 +36,7 @@ class UpdateCourseRequest extends FormRequest
             'instructor_id' => ['nullable', 'integer', Rule::exists('users', 'id')],
             'estimated_duration_minutes' => ['nullable', 'integer', 'min:1'],
             'status' => ['required', Rule::enum(CourseStatus::class)],
-            'thumbnail' => ['nullable', 'image', 'max:3072'],
+            'thumbnail' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:3072'],
         ];
     }
 

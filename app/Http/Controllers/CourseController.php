@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\LessonProgress;
 use App\Services\CourseProgressService;
+use App\Services\MediaStorage;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class CourseController extends Controller
 {
+    public function __construct(private MediaStorage $mediaStorage) {}
+
     public function index(Request $request, CourseProgressService $progress): Response
     {
         $filters = $request->validate([
@@ -36,7 +39,7 @@ class CourseController extends Controller
 
             return [
                 'id' => $course->id, 'title' => $course->title, 'slug' => $course->slug,
-                'description' => $course->description, 'thumbnailPath' => $course->thumbnail_path,
+                'description' => $course->description, 'thumbnailPath' => $this->mediaStorage->courseCoverUrl($course->thumbnail_path),
                 'category' => $course->category, 'level' => $course->level,
                 'instructor' => $course->instructor?->name, 'lessonCount' => $course->lessons_count,
                 'durationMinutes' => $course->estimated_duration_minutes,
@@ -72,7 +75,7 @@ class CourseController extends Controller
                     'id' => $course->id,
                     'title' => $course->title,
                     'slug' => $course->slug,
-                    'thumbnailPath' => $course->thumbnail_path,
+                    'thumbnailPath' => $this->mediaStorage->courseCoverUrl($course->thumbnail_path),
                     'lessonCount' => $details['totalLessons'],
                     'completedLessonCount' => $details['completedLessons'],
                     'progress' => $details['percentage'],
@@ -102,7 +105,7 @@ class CourseController extends Controller
                 'title' => $course->title,
                 'slug' => $course->slug,
                 'description' => $course->description,
-                'thumbnailPath' => $course->thumbnail_path,
+                'thumbnailPath' => $this->mediaStorage->courseCoverUrl($course->thumbnail_path),
                 'progress' => $progress->percentageFor($request->user(), $course),
                 'category' => $course->category,
                 'level' => $course->level,

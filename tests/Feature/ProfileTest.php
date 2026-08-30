@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -127,6 +128,22 @@ class ProfileTest extends TestCase
             ->assertRedirect('/');
 
         $this->assertGuest();
+        $this->assertNull($user->fresh());
+    }
+
+    public function test_user_account_deletion_removes_a_managed_supabase_avatar(): void
+    {
+        Storage::fake('supabase_avatars');
+        $user = User::factory()->create();
+        $avatarPath = "users/{$user->id}/avatar.png";
+        $user->update(['avatar_path' => $avatarPath]);
+        Storage::disk('supabase_avatars')->put($user->avatar_path, 'avatar');
+
+        $this->actingAs($user)
+            ->delete('/profile', ['password' => 'password'])
+            ->assertRedirect('/');
+
+        Storage::disk('supabase_avatars')->assertMissing($avatarPath);
         $this->assertNull($user->fresh());
     }
 

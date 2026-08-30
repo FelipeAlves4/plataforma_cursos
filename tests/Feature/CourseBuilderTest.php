@@ -10,8 +10,12 @@ use App\Models\CourseModule;
 use App\Models\Enrollment;
 use App\Models\Lesson;
 use App\Models\User;
+use App\Services\MediaStorage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
+use RuntimeException;
 use Tests\TestCase;
 
 class CourseBuilderTest extends TestCase
@@ -33,6 +37,78 @@ class CourseBuilderTest extends TestCase
             'status' => CourseStatus::Draft->value,
             'thumbnail_path' => null,
         ]);
+    }
+
+    public function test_admin_uploads_a_course_cover_to_supabase_storage(): void
+    {
+        Storage::fake('supabase_course_covers');
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+
+        $this->actingAs($admin)->post('/admin/courses', [
+            'title' => 'Gestão de Restaurantes',
+            'thumbnail' => UploadedFile::fake()->image('cover.png'),
+        ])->assertRedirect();
+
+        $course = Course::query()->sole();
+        $path = "courses/{$course->id}/cover.png";
+
+        $this->assertSame($path, $course->thumbnail_path);
+        Storage::disk('supabase_course_covers')->assertExists($path);
+    }
+
+    public function test_admin_replaces_a_course_cover_after_the_new_file_is_uploaded(): void
+    {
+        Storage::fake('supabase_course_covers');
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+        $course = $this->course();
+        $oldPath = "courses/{$course->id}/cover.png";
+        $course->update(['thumbnail_path' => $oldPath]);
+        Storage::disk('supabase_course_covers')->put($oldPath, 'old cover');
+
+        $this->actingAs($admin)->put("/admin/courses/{$course->id}", [
+            ...$this->coursePayload($course, CourseStatus::Draft),
+            'thumbnail' => UploadedFile::fake()->image('cover.webp'),
+        ])->assertRedirect();
+
+        $newPath = "courses/{$course->id}/cover.webp";
+
+        $this->assertSame($newPath, $course->fresh()->thumbnail_path);
+        Storage::disk('supabase_course_covers')->assertExists($newPath);
+        Storage::disk('supabase_course_covers')->assertMissing($oldPath);
+    }
+
+    public function test_admin_keeps_the_existing_cover_when_its_replacement_upload_fails(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+        $course = $this->course();
+        $course->update(['thumbnail_path' => "courses/{$course->id}/cover.png"]);
+        $mediaStorage = $this->mock(MediaStorage::class);
+        $mediaStorage->shouldReceive('replaceCourseCover')->once()->andThrow(new RuntimeException('Storage unavailable.'));
+
+        $this->actingAs($admin)->from("/admin/courses/{$course->id}/edit")
+            ->put("/admin/courses/{$course->id}", [
+                ...$this->coursePayload($course, CourseStatus::Draft),
+                'thumbnail' => UploadedFile::fake()->image('replacement.png'),
+            ])
+            ->assertRedirect("/admin/courses/{$course->id}/edit")
+            ->assertSessionHasErrors('thumbnail');
+
+        $this->assertSame("courses/{$course->id}/cover.png", $course->fresh()->thumbnail_path);
+    }
+
+    public function test_admin_removes_a_managed_supabase_cover_when_deleting_a_course(): void
+    {
+        Storage::fake('supabase_course_covers');
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+        $course = $this->course();
+        $path = "courses/{$course->id}/cover.png";
+        $course->update(['thumbnail_path' => $path]);
+        Storage::disk('supabase_course_covers')->put($path, 'cover');
+
+        $this->actingAs($admin)->delete("/admin/courses/{$course->id}")->assertRedirect();
+
+        Storage::disk('supabase_course_covers')->assertMissing($path);
+        $this->assertModelMissing($course);
     }
 
     public function test_admin_adds_modules_in_automatic_order(): void

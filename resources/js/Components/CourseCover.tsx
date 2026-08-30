@@ -20,9 +20,7 @@ function AsexPlaceholder({ className = '', title }: Pick<Props, 'className' | 't
 export default function CourseCover({ className = '', thumbnailPath, title }: Props) {
     const [imageFailed, setImageFailed] = useState(false);
 
-    const source = thumbnailPath
-        ? (/^https?:\/\//.test(thumbnailPath) ? thumbnailPath : `/storage/${thumbnailPath}`)
-        : null;
+    const source = thumbnailPath ?? null;
 
     if (!source || imageFailed) {
         return <AsexPlaceholder className={className} title={title} />;

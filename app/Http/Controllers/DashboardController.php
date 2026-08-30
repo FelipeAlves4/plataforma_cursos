@@ -7,6 +7,7 @@ use App\Models\Enrollment;
 use App\Models\Lesson;
 use App\Models\LessonProgress;
 use App\Services\CourseProgressService;
+use App\Services\MediaStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,6 +15,8 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
+    public function __construct(private MediaStorage $mediaStorage) {}
+
     public function __invoke(Request $request, CourseProgressService $progress): Response|RedirectResponse
     {
         $user = $request->user();
@@ -66,7 +69,7 @@ class DashboardController extends Controller
                 'moduleTitle' => $continueLesson->module->title,
                 'courseTitle' => $continueLesson->module->course->title,
                 'courseSlug' => $continueLesson->module->course->slug,
-                'thumbnailPath' => $continueLesson->module->course->thumbnail_path,
+                'thumbnailPath' => $this->mediaStorage->courseCoverUrl($continueLesson->module->course->thumbnail_path),
                 'progress' => $courseProgress[$continueLesson->module->course->id] ?? 0,
             ] : null,
             'featuredCourses' => $courses->take(2)->values(),
@@ -91,7 +94,7 @@ class DashboardController extends Controller
             'title' => $course->title,
             'slug' => $course->slug,
             'description' => $course->description,
-            'thumbnailPath' => $course->thumbnail_path,
+            'thumbnailPath' => $this->mediaStorage->courseCoverUrl($course->thumbnail_path),
             'category' => $course->category,
             'level' => $course->level,
             'progress' => $courseProgress,

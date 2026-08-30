@@ -1,5 +1,16 @@
 <?php
 
+use Illuminate\Support\Str;
+
+$supabaseS3Endpoint = rtrim((string) env('SUPABASE_S3_ENDPOINT', ''), '/');
+$supabasePublicUrl = $supabaseS3Endpoint === ''
+    ? null
+    : Str::replaceFirst(
+        '.storage.supabase.co',
+        '.supabase.co',
+        Str::beforeLast($supabaseS3Endpoint, '/s3'),
+    ).'/object/public';
+
 return [
 
     /*
@@ -57,6 +68,32 @@ return [
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
+            'report' => false,
+        ],
+
+        'supabase_course_covers' => [
+            'driver' => 's3',
+            'key' => env('SUPABASE_S3_ACCESS_KEY'),
+            'secret' => env('SUPABASE_S3_SECRET_KEY'),
+            'region' => env('SUPABASE_S3_REGION'),
+            'bucket' => env('COURSE_COVERS_BUCKET', 'course-covers'),
+            'url' => $supabasePublicUrl ? $supabasePublicUrl.'/'.env('COURSE_COVERS_BUCKET', 'course-covers') : null,
+            'endpoint' => $supabaseS3Endpoint,
+            'use_path_style_endpoint' => true,
+            'throw' => true,
+            'report' => false,
+        ],
+
+        'supabase_avatars' => [
+            'driver' => 's3',
+            'key' => env('SUPABASE_S3_ACCESS_KEY'),
+            'secret' => env('SUPABASE_S3_SECRET_KEY'),
+            'region' => env('SUPABASE_S3_REGION'),
+            'bucket' => env('AVATARS_BUCKET', 'avatars'),
+            'url' => $supabasePublicUrl ? $supabasePublicUrl.'/'.env('AVATARS_BUCKET', 'avatars') : null,
+            'endpoint' => $supabaseS3Endpoint,
+            'use_path_style_endpoint' => true,
+            'throw' => true,
             'report' => false,
         ],
 

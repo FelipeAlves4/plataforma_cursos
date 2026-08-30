@@ -75,7 +75,7 @@ class CourseCatalogTest extends TestCase
         $courses = collect($response->inertiaProps('courses'))->keyBy('slug');
 
         $this->assertSame('available', $courses['curso-disponivel']['status']);
-        $this->assertSame('courses/capa.jpg', $courses['curso-disponivel']['thumbnailPath']);
+        $this->assertSame('http://localhost:8000/storage/courses/capa.jpg', $courses['curso-disponivel']['thumbnailPath']);
         $this->assertArrayNotHasKey('videoId', $courses['curso-disponivel']);
         $this->assertSame('in_progress', $courses['curso-em-andamento']['status']);
         $this->assertSame('completed', $courses['curso-concluido']['status']);
