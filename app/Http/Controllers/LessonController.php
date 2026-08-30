@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Certificate;
 use App\Models\Lesson;
 use App\Models\LessonProgress;
+use App\Services\CertificateService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class LessonController extends Controller
 {
-    public function show(Request $request, Lesson $lesson): Response
+    public function show(Request $request, Lesson $lesson, CertificateService $certificates): Response
     {
         $this->authorize('view', $lesson);
 
@@ -36,6 +38,10 @@ class LessonController extends Controller
         $position = $orderedLessons->search(fn ($item) => $item->id === $lesson->id);
         $totalLessons = $orderedLessons->count();
         $completedLessons = count($completedLessonIds);
+        $certificate = Certificate::query()
+            ->whereBelongsTo($request->user())
+            ->whereBelongsTo($course)
+            ->first();
 
         return Inertia::render('Lessons/Show', [
             'lesson' => [
@@ -59,6 +65,12 @@ class LessonController extends Controller
                     'completedLessons' => $completedLessons,
                     'totalLessons' => $totalLessons,
                     'percentage' => $totalLessons > 0 ? (int) round(($completedLessons / $totalLessons) * 100) : 0,
+                ],
+                'certificate' => [
+                    'enabled' => $course->certificate_enabled,
+                    'eligible' => ! $certificate && $certificates->isEligible($request->user(), $course),
+                    'downloadUrl' => $certificate ? route('certificates.download', $certificate) : null,
+                    'issueUrl' => route('courses.certificate.store', $course),
                 ],
                 'modules' => $course->modules->map(fn ($module) => [
                     'id' => $module->id,

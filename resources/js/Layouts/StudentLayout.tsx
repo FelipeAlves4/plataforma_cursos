@@ -3,12 +3,13 @@ import { PageProps } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren } from 'react';
 
-type IconName = 'home' | 'book' | 'compass' | 'profile' | 'logout';
+type IconName = 'home' | 'book' | 'compass' | 'certificate' | 'profile' | 'logout';
 
 const icons: Record<IconName, JSX.Element> = {
     home: <path d="M3 10.5 12 3l9 7.5v9a1.5 1.5 0 0 1-1.5 1.5h-4.25v-6h-6.5v6H4.5A1.5 1.5 0 0 1 3 19.5v-9Z" />,
     book: <><path d="M4 5.75A2.75 2.75 0 0 1 6.75 3H11v16H6.75A2.75 2.75 0 0 0 4 21V5.75Z" /><path d="M20 5.75A2.75 2.75 0 0 0 17.25 3H13v16h4.25A2.75 2.75 0 0 1 20 21V5.75Z" /></>,
     compass: <><circle cx="12" cy="12" r="8.5" /><path d="m14.75 9.25-2 4-4 2 2-4 4-2Z" /></>,
+    certificate: <><path d="M7 3h10v11H7z" /><path d="m9 14-2 7 5-2 5 2-2-7" /><path d="M9.5 7.5h5" /></>,
     profile: <><circle cx="12" cy="8" r="3.25" /><path d="M5 21c.65-3.25 3.1-5 7-5s6.35 1.75 7 5" /></>,
     logout: <><path d="M10 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19H10" /><path d="m14 8 4 4-4 4M18 12H9" /></>,
 };
@@ -23,6 +24,7 @@ export default function StudentLayout({ children }: PropsWithChildren) {
         { href: '/dashboard', label: 'Início', icon: 'home', active: url.startsWith('/dashboard') },
         { href: '/my-courses', label: 'Meus cursos', icon: 'book', active: url.startsWith('/my-courses') },
         { href: '/courses', label: 'Explorar', icon: 'compass', active: url.startsWith('/courses') },
+        { href: '/certificates', label: 'Certificados', icon: 'certificate', active: url.startsWith('/certificates') },
         { href: '/profile', label: 'Perfil', icon: 'profile', active: url.startsWith('/profile') },
     ];
 

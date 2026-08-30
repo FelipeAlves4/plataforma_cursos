@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Lesson;
 use App\Models\LessonProgress;
+use App\Services\CertificateService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class LessonProgressController extends Controller
 {
-    public function update(Request $request, Lesson $lesson): RedirectResponse
+    public function update(Request $request, Lesson $lesson, CertificateService $certificates): RedirectResponse
     {
         $this->authorize('view', $lesson);
 
@@ -29,6 +30,11 @@ class LessonProgressController extends Controller
         $progress->last_position_seconds = $data['last_position_seconds'] ?? $progress->last_position_seconds ?? 0;
         $progress->completed_at = $data['completed'] ? ($progress->completed_at ?? now()) : null;
         $progress->save();
+
+        if ($data['completed']) {
+            $lesson->loadMissing('module.course');
+            $certificates->findOrIssue($request->user(), $lesson->module->course);
+        }
 
         return back()->with('success', $data['completed'] ? 'Aula marcada como concluída.' : 'Aula marcada como pendente.');
     }

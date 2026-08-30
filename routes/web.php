@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CoursePreviewController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\LessonController as AdminLessonController;
 use App\Http\Controllers\Admin\StudentController as AdminStudentController;
+use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LandingController;
@@ -16,6 +17,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
 
+Route::get('/certificates/verify/{verificationCode}', [CertificateController::class, 'verify'])
+    ->name('certificates.verify');
+
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
@@ -24,6 +28,9 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
     Route::get('/my-courses', [CourseController::class, 'myCourses'])->name('courses.my');
     Route::get('/courses/{course:slug}', [CourseController::class, 'show'])->name('courses.show');
+    Route::post('/courses/{course}/certificate', [CertificateController::class, 'store'])->name('courses.certificate.store');
+    Route::get('/certificates', [CertificateController::class, 'index'])->name('certificates.index');
+    Route::get('/certificates/{certificate}/download', [CertificateController::class, 'download'])->name('certificates.download');
     Route::get('/lessons/{lesson}', [LessonController::class, 'show'])->name('lessons.show');
     Route::put('/lessons/{lesson}/progress', [LessonProgressController::class, 'update'])
         ->name('lessons.progress.update');

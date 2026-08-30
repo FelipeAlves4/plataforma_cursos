@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
-#[Fillable(['title', 'slug', 'description', 'thumbnail_path', 'status', 'category', 'level', 'instructor_id', 'estimated_duration_minutes'])]
+#[Fillable(['title', 'slug', 'description', 'thumbnail_path', 'status', 'category', 'level', 'instructor_id', 'estimated_duration_minutes', 'certificate_enabled'])]
 class Course extends Model
 {
     use HasFactory;
@@ -19,11 +19,15 @@ class Course extends Model
     /** @var array<string, string> */
     protected $attributes = [
         'status' => CourseStatus::Draft->value,
+        'certificate_enabled' => true,
     ];
 
     protected function casts(): array
     {
-        return ['status' => CourseStatus::class];
+        return [
+            'status' => CourseStatus::class,
+            'certificate_enabled' => 'boolean',
+        ];
     }
 
     public function modules(): HasMany
@@ -34,6 +38,11 @@ class Course extends Model
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class);
+    }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class);
     }
 
     public function lessons(): HasManyThrough

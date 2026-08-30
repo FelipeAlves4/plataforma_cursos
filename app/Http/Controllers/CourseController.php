@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Certificate;
 use App\Models\Course;
 use App\Models\LessonProgress;
+use App\Services\CertificateService;
 use App\Services\CourseProgressService;
 use App\Services\MediaStorage;
 use Illuminate\Http\Request;
@@ -12,7 +14,10 @@ use Inertia\Response;
 
 class CourseController extends Controller
 {
-    public function __construct(private MediaStorage $mediaStorage) {}
+    public function __construct(
+        private MediaStorage $mediaStorage,
+        private CertificateService $certificates,
+    ) {}
 
     public function index(Request $request, CourseProgressService $progress): Response
     {
@@ -65,11 +70,17 @@ class CourseController extends Controller
             ->pluck('course')
             ->values();
         $courseProgress = $progress->detailsFor($request->user(), $enrolledCourses);
+        $certificatesByCourse = Certificate::query()
+            ->whereBelongsTo($request->user())
+            ->whereIn('course_id', $enrolledCourses->pluck('id'))
+            ->get()
+            ->keyBy('course_id');
 
         return Inertia::render('Courses/MyCourses', [
-            'courses' => $enrolledCourses->map(function (Course $course) use ($courseProgress): array {
+            'courses' => $enrolledCourses->map(function (Course $course) use ($certificatesByCourse, $courseProgress): array {
                 $details = $courseProgress[$course->id] ?? ['completedLessons' => 0, 'totalLessons' => 0, 'percentage' => 0];
                 $status = $details['percentage'] === 100 ? 'completed' : ($details['percentage'] > 0 ? 'in_progress' : 'not_started');
+                $certificate = $certificatesByCourse->get($course->id);
 
                 return [
                     'id' => $course->id,
@@ -80,6 +91,11 @@ class CourseController extends Controller
                     'completedLessonCount' => $details['completedLessons'],
                     'progress' => $details['percentage'],
                     'status' => $status,
+                    'certificate' => $certificate ? [
+                        'downloadUrl' => route('certificates.download', $certificate),
+                    ] : ($course->certificate_enabled && $details['totalLessons'] > 0 && $details['percentage'] === 100 ? [
+                        'issueUrl' => route('courses.certificate.store', $course),
+                    ] : null),
                 ];
             }),
         ]);
@@ -98,6 +114,10 @@ class CourseController extends Controller
 
         $nextLesson = $course->modules->flatMap->lessons->first(fn ($lesson) => ! in_array($lesson->id, $completedLessonIds, true))
             ?? $course->modules->flatMap->lessons->first();
+        $certificate = Certificate::query()
+            ->whereBelongsTo($request->user())
+            ->whereBelongsTo($course)
+            ->first();
 
         return Inertia::render('Courses/Show', [
             'course' => [
@@ -114,6 +134,12 @@ class CourseController extends Controller
                 'lessonCount' => $course->lessons->count(),
                 'moduleCount' => $course->modules->count(),
                 'nextLessonId' => $nextLesson?->id,
+                'certificate' => [
+                    'enabled' => $course->certificate_enabled,
+                    'eligible' => ! $certificate && $this->certificates->isEligible($request->user(), $course),
+                    'downloadUrl' => $certificate ? route('certificates.download', $certificate) : null,
+                    'issueUrl' => route('courses.certificate.store', $course),
+                ],
                 'modules' => $course->modules->map(fn ($module) => [
                     'id' => $module->id,
                     'title' => $module->title,
