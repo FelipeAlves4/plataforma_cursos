@@ -8,6 +8,7 @@ use App\Services\InfinitePayService;
 use App\Services\PaymentFulfillmentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,10 +22,11 @@ class PaymentReturnController extends Controller
             'slug' => ['nullable', 'string', 'max:255'],
             'receipt_url' => ['nullable', 'url', 'max:2048'],
         ]);
-        $order = Order::query()
-            ->whereBelongsTo($request->user())
-            ->where('order_nsu', $data['order_nsu'])
-            ->firstOrFail();
+        $order = Order::query()->where('order_nsu', $data['order_nsu'])->firstOrFail();
+
+        if (! $order->isPublicCheckout()) {
+            abort_unless($request->user()?->id === $order->user_id, 404);
+        }
 
         if ($order->status === OrderStatus::Pending
             && isset($data['transaction_nsu'], $data['slug'])) {
@@ -37,6 +39,16 @@ class PaymentReturnController extends Controller
                 $fulfillment,
             );
             $order->refresh();
+        }
+
+        if ($order->isPublicCheckout()) {
+            return Inertia::render('Payments/PublicCheckoutReturn', [
+                'order' => [
+                    ...$this->orderData($order),
+                    'accessUrl' => $this->activationUrl($order),
+                    'loginUrl' => route('login'),
+                ],
+            ]);
         }
 
         return Inertia::render('Payments/InfinitePayReturn', [
@@ -73,5 +85,21 @@ class PaymentReturnController extends Controller
             'status' => $order->status->value,
             'paidAt' => $order->paid_at?->toDateTimeString(),
         ];
+    }
+
+    private function activationUrl(Order $order): ?string
+    {
+        if ($order->status !== OrderStatus::Paid
+            || $order->activation_expires_at === null
+            || ! $order->activation_expires_at->isFuture()
+            || $order->activation_used_at !== null) {
+            return null;
+        }
+
+        return URL::temporarySignedRoute(
+            'checkout.access.create',
+            $order->activation_expires_at,
+            ['order' => $order],
+        );
     }
 }

@@ -56,6 +56,11 @@ class Course extends Model
         return $this->belongsToMany(Offer::class, 'offer_courses');
     }
 
+    public function orders(): BelongsToMany
+    {
+        return $this->belongsToMany(Order::class, 'order_course')->withTimestamps();
+    }
+
     public function lessons(): HasManyThrough
     {
         return $this->hasManyThrough(Lesson::class, CourseModule::class, 'course_id', 'module_id');

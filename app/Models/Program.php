@@ -37,6 +37,11 @@ class Program extends Model
         return $this->hasMany(Offer::class);
     }
 
+    public function checkoutLinks(): HasMany
+    {
+        return $this->hasMany(CheckoutLink::class);
+    }
+
     public function scopeActive(Builder $query): void
     {
         $query->where('active', true);

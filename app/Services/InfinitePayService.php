@@ -15,7 +15,13 @@ class InfinitePayService
     /** @return array{url: string} */
     public function createCheckout(Order $order): array
     {
-        $order->loadMissing('offer', 'user');
+        $order->loadMissing('offer', 'user', 'checkoutLead');
+        $description = $order->program_name_snapshot ?? $order->offer?->program_name_snapshot;
+        $customer = $order->checkoutLead ?? $order->user;
+
+        if ($description === null || $customer === null) {
+            throw new \LogicException('O pedido não possui dados comerciais suficientes para iniciar o checkout.');
+        }
 
         $response = $this->request()->post(self::BaseUrl.'/links', array_filter([
             'handle' => $this->handle(),
@@ -25,12 +31,12 @@ class InfinitePayService
             'items' => [[
                 'quantity' => 1,
                 'price' => $order->amount_cents,
-                'description' => $order->offer->program_name_snapshot,
+                'description' => $description,
             ]],
             'customer' => array_filter([
-                'name' => $order->user->name,
-                'email' => $order->user->email,
-                'phone_number' => $order->user->phone,
+                'name' => $customer->name,
+                'email' => $customer->email,
+                'phone_number' => $customer->phone,
             ]),
         ]));
 

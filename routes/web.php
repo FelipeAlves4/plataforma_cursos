@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\CheckoutLinkController as AdminCheckoutLinkController;
 use App\Http\Controllers\Admin\CourseController as AdminCourseController;
 use App\Http\Controllers\Admin\CourseModuleController as AdminCourseModuleController;
 use App\Http\Controllers\Admin\CoursePreviewController;
@@ -20,6 +21,8 @@ use App\Http\Controllers\OfferCheckoutController;
 use App\Http\Controllers\OrderStatusController;
 use App\Http\Controllers\PaymentReturnController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicAccessController;
+use App\Http\Controllers\PublicCheckoutController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
@@ -29,6 +32,18 @@ Route::get('/certificates/verify/{verificationCode}', [CertificateController::cl
 
 Route::post('/webhooks/infinitepay', InfinitePayWebhookController::class)
     ->name('webhooks.infinitepay');
+
+Route::get('/checkout/{token}', [PublicCheckoutController::class, 'show'])->name('checkout.show');
+Route::post('/checkout/{token}', [PublicCheckoutController::class, 'store'])
+    ->middleware('throttle:8,1')
+    ->name('checkout.store');
+Route::get('/payments/infinitepay/return', PaymentReturnController::class)->name('payments.infinitepay.return');
+Route::get('/checkout/access/{order}', [PublicAccessController::class, 'create'])
+    ->middleware(['signed', 'throttle:6,1'])
+    ->name('checkout.access.create');
+Route::post('/checkout/access/{order}', [PublicAccessController::class, 'store'])
+    ->middleware(['signed', 'throttle:6,1'])
+    ->name('checkout.access.store');
 
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])
@@ -45,7 +60,6 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::put('/lessons/{lesson}/progress', [LessonProgressController::class, 'update'])
         ->name('lessons.progress.update');
     Route::post('/offers/{offer}/checkout', OfferCheckoutController::class)->name('offers.checkout');
-    Route::get('/payments/infinitepay/return', PaymentReturnController::class)->name('payments.infinitepay.return');
     Route::get('/orders/{order}/status', OrderStatusController::class)->name('orders.status');
 });
 
@@ -56,6 +70,9 @@ Route::prefix('admin')
         Route::get('/', AdminDashboardController::class)->name('dashboard');
         Route::resource('courses', AdminCourseController::class)->except('show');
         Route::resource('programs', AdminProgramController::class)->except(['show', 'destroy']);
+        Route::get('checkout-links', [AdminCheckoutLinkController::class, 'index'])->name('checkout-links.index');
+        Route::post('checkout-links', [AdminCheckoutLinkController::class, 'store'])->name('checkout-links.store');
+        Route::patch('checkout-links/{checkoutLink}', [AdminCheckoutLinkController::class, 'update'])->name('checkout-links.update');
         Route::get('offers/create', [AdminOfferController::class, 'create'])->name('offers.create');
         Route::post('offers', [AdminOfferController::class, 'store'])->name('offers.store');
         Route::get('offers/{offer}', [AdminOfferController::class, 'show'])->name('offers.show');

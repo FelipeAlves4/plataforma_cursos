@@ -18,7 +18,7 @@ class ProgramController extends Controller
     {
         return Inertia::render('Admin/Programs/Index', [
             'programs' => Program::query()
-                ->withCount(['courses', 'offers'])
+                ->withCount(['courses', 'offers', 'checkoutLinks'])
                 ->latest()
                 ->get()
                 ->map(fn (Program $program): array => [
@@ -27,6 +27,7 @@ class ProgramController extends Controller
                     'audience' => $program->audience,
                     'courseCount' => $program->courses_count,
                     'offerCount' => $program->offers_count,
+                    'checkoutLinkCount' => $program->checkout_links_count,
                     'defaultPriceCents' => $program->default_price_cents,
                     'active' => $program->active,
                 ]),
