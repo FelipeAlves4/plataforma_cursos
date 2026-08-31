@@ -25,6 +25,22 @@
     .hero-glow { @apply absolute -right-48 -top-44 h-[36rem] w-[36rem] rounded-full bg-brand-500/25 blur-3xl; }
     .asex-gradient { background: var(--asex-gradient); }
 
+    .student-shell {
+        --student-canvas: #08070d;
+        --student-surface: #131018;
+        --student-raised: #19121f;
+        --student-border: rgba(255, 255, 255, 0.1);
+        --student-muted: rgba(255, 255, 255, 0.6);
+        --student-accent: #c28aff;
+        background: var(--student-canvas);
+    }
+    .student-shell .asex-gradient {
+        background: linear-gradient(135deg, #6b2bb1 0%, #a855f7 100%);
+        box-shadow: 0 12px 28px rgba(122, 47, 199, 0.24);
+    }
+    .student-shell .asex-gradient:hover { box-shadow: 0 16px 34px rgba(143, 68, 220, 0.35); }
+    .student-shell ::selection { background: #9347dd; color: white; }
+
     .admin-shell {
         --admin-background: #08060D;
         --admin-sidebar: #100C18;
