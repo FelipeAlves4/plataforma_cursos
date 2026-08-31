@@ -40,6 +40,8 @@
     }
     .student-shell .asex-gradient:hover { box-shadow: 0 16px 34px rgba(143, 68, 220, 0.35); }
     .student-shell ::selection { background: #9347dd; color: white; }
+    .student-shell .student-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .student-shell .student-scrollbar::-webkit-scrollbar { display: none; }
 
     .admin-shell {
         --admin-background: #08060D;

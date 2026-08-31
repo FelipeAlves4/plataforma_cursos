@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\CourseStatus;
 use App\Enums\OfferStatus;
+use App\Enums\OrderProvider;
 use App\Enums\OrderStatus;
 use App\Enums\UserRole;
 use App\Models\Course;
@@ -97,6 +98,22 @@ class CommerceTest extends TestCase
         $this->assertSame($admin->id, $offer->created_by);
     }
 
+    public function test_administrator_cannot_create_an_offer_for_one_cent(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+        $student = User::factory()->create();
+        $program = $this->programWithCourses();
+
+        $this->actingAs($admin)->from('/admin/offers/create')->post('/admin/offers', [
+            'user_id' => $student->id,
+            'program_id' => $program->id,
+            'price_cents' => 1,
+        ])->assertRedirect('/admin/offers/create')
+            ->assertSessionHasErrors(['price_cents' => 'O valor da oferta deve ser maior que R$ 0,01.']);
+
+        $this->assertDatabaseCount('offers', 0);
+    }
+
     public function test_offer_course_snapshot_is_unchanged_when_the_program_courses_change(): void
     {
         $student = User::factory()->create();
@@ -165,6 +182,60 @@ class CommerceTest extends TestCase
         Http::assertSent(fn (ClientRequest $request): bool => $request->url() === 'https://api.checkout.infinitepay.io/links'
             && $request['items'][0]['price'] === 69700
             && $request['order_nsu'] === $order->order_nsu);
+    }
+
+    public function test_checkout_persists_the_provider_url_and_returns_an_inertia_external_location_response(): void
+    {
+        config()->set('services.infinitepay', [
+            'handle' => 'asex',
+            'redirect_url' => 'https://asex.test/payments/infinitepay/return',
+            'webhook_url' => 'https://asex.test/webhooks/infinitepay',
+        ]);
+        $checkoutUrl = 'https://checkout.infinitepay.com.br/asex?lenc=valid';
+        Http::preventStrayRequests();
+        Http::fake(['https://api.checkout.infinitepay.io/links' => Http::response(['url' => $checkoutUrl])]);
+        $student = User::factory()->create();
+        $offer = $this->offerFor($student, $this->programWithCourses(), 1000);
+
+        $response = $this->actingAs($student)
+            ->withHeader('X-Inertia', 'true')
+            ->post("/offers/{$offer->id}/checkout");
+
+        $response->assertStatus(409)
+            ->assertHeader('X-Inertia-Location', $checkoutUrl);
+
+        $order = Order::query()->firstOrFail();
+        $this->assertSame($checkoutUrl, $order->checkout_url);
+        $this->assertSame(OrderStatus::Pending, $order->status);
+        $this->assertDatabaseCount('enrollments', 0);
+    }
+
+    public function test_checkout_reuses_a_pending_orders_existing_provider_url_with_inertia_external_location(): void
+    {
+        $checkoutUrl = 'https://checkout.infinitepay.com.br/asex?lenc=reused';
+        Http::preventStrayRequests();
+        $student = User::factory()->create();
+        $offer = $this->offerFor($student, $this->programWithCourses(), 1000);
+        $order = Order::query()->create([
+            'offer_id' => $offer->id,
+            'user_id' => $student->id,
+            'provider' => OrderProvider::InfinitePay,
+            'order_nsu' => 'ASEX-REUSED-1',
+            'amount_cents' => 1000,
+            'checkout_url' => $checkoutUrl,
+        ]);
+
+        $response = $this->actingAs($student)
+            ->withHeader('X-Inertia', 'true')
+            ->post("/offers/{$offer->id}/checkout");
+
+        $response->assertStatus(409)
+            ->assertHeader('X-Inertia-Location', $checkoutUrl);
+
+        $this->assertSame(OrderStatus::Pending, $order->fresh()->status);
+        $this->assertDatabaseCount('orders', 1);
+        $this->assertDatabaseCount('enrollments', 0);
+        Http::assertNothingSent();
     }
 
     public function test_expired_offer_does_not_create_a_checkout(): void

@@ -20,10 +20,11 @@ function Icon({ name }: { name: IconName }) {
 
 export default function StudentLayout({ children }: PropsWithChildren) {
     const { props: { auth, flash }, url } = usePage<PageProps>();
+    const isLearningRoute = url.startsWith('/my-courses') || /^\/courses\/[^/]+$/.test(url) || url.startsWith('/lessons/');
     const links: { href: string; label: string; icon: IconName; active: boolean }[] = [
         { href: '/dashboard', label: 'Início', icon: 'home', active: url.startsWith('/dashboard') },
-        { href: '/my-courses', label: 'Meus cursos', icon: 'book', active: url.startsWith('/my-courses') },
-        { href: '/courses', label: 'Disponível', icon: 'compass', active: url.startsWith('/courses') },
+        { href: '/my-courses', label: 'Meus cursos', icon: 'book', active: isLearningRoute },
+        { href: '/courses', label: 'Disponível', icon: 'compass', active: url === '/courses' },
         { href: '/certificates', label: 'Certificados', icon: 'certificate', active: url.startsWith('/certificates') },
         { href: '/profile', label: 'Perfil', icon: 'profile', active: url.startsWith('/profile') },
     ];

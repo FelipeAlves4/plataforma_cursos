@@ -8,16 +8,16 @@ use App\Enums\OrderStatus;
 use App\Models\Offer;
 use App\Models\Order;
 use App\Services\InfinitePayService;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 class OfferCheckoutController extends Controller
 {
-    public function __invoke(Request $request, Offer $offer, InfinitePayService $infinitePay): RedirectResponse
+    public function __invoke(Request $request, Offer $offer, InfinitePayService $infinitePay): Response
     {
         abort_unless($offer->user_id === $request->user()->id, 404);
 

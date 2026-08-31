@@ -37,8 +37,20 @@ class StoreOfferRequest extends FormRequest
                 'integer',
                 Rule::exists(Program::class, 'id')->where('active', true),
             ],
-            'price_cents' => ['required', 'integer', 'min:0'],
+            'price_cents' => ['required', 'integer', 'min:2'],
             'expires_at' => ['nullable', 'date', 'after:now'],
+        ];
+    }
+
+    /**
+     * Get the custom validation messages for the request.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'price_cents.min' => 'O valor da oferta deve ser maior que R$ 0,01.',
         ];
     }
 }
