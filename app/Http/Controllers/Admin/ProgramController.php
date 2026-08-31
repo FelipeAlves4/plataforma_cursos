@@ -42,11 +42,16 @@ class ProgramController extends Controller
     {
         $program = DB::transaction(function () use ($request): Program {
             $data = $request->validated();
-            $program = Program::query()->create(collect($data)->except('course_ids')->all());
+            $program = Program::query()->create(collect($data)->except(['course_ids', 'redirect_to_offer'])->all());
             $program->courses()->sync($data['course_ids']);
 
             return $program;
         });
+
+        if ($request->boolean('redirect_to_offer')) {
+            return redirect()->route('admin.offers.create', ['program_id' => $program->id])
+                ->with('success', 'Programa criado. Agora, disponibilize-o para um aluno.');
+        }
 
         return redirect()->route('admin.programs.edit', $program)->with('success', 'Programa criado.');
     }
@@ -71,7 +76,7 @@ class ProgramController extends Controller
     {
         DB::transaction(function () use ($request, $program): void {
             $data = $request->validated();
-            $program->update(collect($data)->except('course_ids')->all());
+            $program->update(collect($data)->except(['course_ids', 'redirect_to_offer'])->all());
             $program->courses()->sync($data['course_ids']);
         });
 

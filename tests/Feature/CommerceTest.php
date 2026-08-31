@@ -28,17 +28,39 @@ class CommerceTest extends TestCase
         $firstCourse = $this->course('Gestão financeira', 'gestao-financeira');
         $secondCourse = $this->course('Atendimento', 'atendimento');
 
-        $this->actingAs($admin)->post('/admin/programs', [
+        $response = $this->actingAs($admin)->post('/admin/programs', [
             'name' => 'Gestão para restaurantes',
             'audience' => 'Restaurantes',
             'default_price_cents' => 69700,
             'active' => true,
             'course_ids' => [$firstCourse->id, $secondCourse->id],
-        ])->assertRedirect();
+            'redirect_to_offer' => true,
+        ]);
 
         $program = Program::query()->firstOrFail();
+        $response->assertRedirect(route('admin.offers.create', ['program_id' => $program->id], false));
+        $this->assertDatabaseCount('programs', 1);
         $this->assertSame(['Atendimento', 'Gestão financeira'], $program->courses()->orderBy('title')->pluck('title')->all());
         $this->assertSame(69700, $program->default_price_cents);
+    }
+
+    public function test_offer_creation_preselects_only_an_active_program_from_the_query_string(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+        $activeProgram = $this->programWithCourses();
+        $inactiveProgram = Program::query()->create(['name' => 'Programa inativo', 'default_price_cents' => 49700, 'active' => false]);
+
+        $this->actingAs($admin)->get("/admin/offers/create?program_id={$activeProgram->id}")
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Offers/Create')
+                ->where('selectedProgramId', $activeProgram->id)
+            );
+
+        $this->actingAs($admin)->get("/admin/offers/create?program_id={$inactiveProgram->id}")
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Offers/Create')
+                ->where('selectedProgramId', null)
+            );
     }
 
     public function test_program_rejects_a_duplicate_course(): void
@@ -73,6 +95,19 @@ class CommerceTest extends TestCase
         $this->assertSame(59700, $offer->price_cents);
         $this->assertSame(2, $offer->courses()->count());
         $this->assertSame($admin->id, $offer->created_by);
+    }
+
+    public function test_offer_course_snapshot_is_unchanged_when_the_program_courses_change(): void
+    {
+        $student = User::factory()->create();
+        $program = $this->programWithCourses();
+        $offer = $this->offerFor($student, $program, 69700);
+        $firstCourse = $program->courses()->orderBy('title')->firstOrFail();
+
+        $program->courses()->sync([$firstCourse->id]);
+
+        $this->assertSame(1, $program->courses()->count());
+        $this->assertSame(2, $offer->courses()->count());
     }
 
     public function test_student_only_sees_their_own_payable_offers_and_library_stays_enrollment_only(): void

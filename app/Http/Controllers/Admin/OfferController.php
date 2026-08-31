@@ -10,15 +10,22 @@ use App\Models\Offer;
 use App\Models\Program;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class OfferController extends Controller
 {
-    public function create(): Response
+    public function create(Request $request): Response
     {
+        $selectedProgramId = Program::query()
+            ->active()
+            ->whereKey($request->integer('program_id'))
+            ->value('id');
+
         return Inertia::render('Admin/Offers/Create', [
+            'selectedProgramId' => $selectedProgramId,
             'students' => User::query()->where('role', UserRole::Student)->orderBy('name')->get(['id', 'name', 'email']),
             'programs' => Program::query()->active()->with('courses:id,title')->orderBy('name')->get()->map(fn (Program $program): array => [
                 'id' => $program->id,

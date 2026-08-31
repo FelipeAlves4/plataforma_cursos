@@ -31,6 +31,7 @@ class StoreProgramRequest extends FormRequest
             'audience' => ['nullable', 'string', 'max:255'],
             'default_price_cents' => ['required', 'integer', 'min:0'],
             'active' => ['required', 'boolean'],
+            'redirect_to_offer' => ['sometimes', 'boolean'],
             'course_ids' => ['required', 'array', 'min:1'],
             'course_ids.*' => [
                 'required',
