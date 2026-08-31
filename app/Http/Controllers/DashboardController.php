@@ -6,6 +6,7 @@ use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Lesson;
 use App\Models\LessonProgress;
+use App\Models\Offer;
 use App\Services\CourseProgressService;
 use App\Services\MediaStorage;
 use Illuminate\Http\RedirectResponse;
@@ -52,14 +53,19 @@ class DashboardController extends Controller
             ->first(fn (Lesson $lesson) => ! $completedLessonIds->contains($lesson->id))
             ?? $enrolledCourses->flatMap(fn (Course $course) => $course->modules->flatMap->lessons)->first();
         $continueLesson = $lastProgress?->lesson ?? $fallbackLesson;
-        $recommendedCourses = Course::query()
-            ->published()
-            ->whereNotIn('id', $courseIds)
-            ->with('modules.lessons')
+        $offers = Offer::query()
+            ->whereBelongsTo($user)
+            ->payable()
+            ->withCount('courses')
             ->latest()
-            ->take(4)
             ->get()
-            ->map(fn (Course $course) => $this->courseData($course, 0, false));
+            ->map(fn (Offer $offer): array => [
+                'id' => $offer->id,
+                'programName' => $offer->program_name_snapshot,
+                'priceCents' => $offer->price_cents,
+                'expiresAt' => $offer->expires_at?->toDateTimeString(),
+                'courseCount' => $offer->courses_count,
+            ]);
 
         return Inertia::render('Dashboard', [
             'courses' => $courses,
@@ -73,8 +79,7 @@ class DashboardController extends Controller
                 'progress' => $courseProgress[$continueLesson->module->course->id] ?? 0,
             ] : null,
             'featuredCourses' => $courses->take(2)->values(),
-            'newCourses' => $recommendedCourses->take(2)->values(),
-            'recommendedCourses' => $recommendedCourses,
+            'offers' => $offers,
             'metrics' => [
                 'inProgress' => $courses->filter(fn (array $course) => $course['progress'] > 0 && $course['progress'] < 100)->count(),
                 'completedCourses' => $courses->where('progress', 100)->count(),
@@ -85,7 +90,7 @@ class DashboardController extends Controller
     }
 
     /** @return array<string, int|string|null|bool> */
-    private function courseData(Course $course, int $courseProgress, bool $enrolled = true): array
+    private function courseData(Course $course, int $courseProgress): array
     {
         $lessons = $course->modules->flatMap->lessons;
 
@@ -101,7 +106,7 @@ class DashboardController extends Controller
             'lessonCount' => $lessons->count(),
             'moduleCount' => $course->modules->count(),
             'durationMinutes' => $course->estimated_duration_minutes ?: (int) ceil($lessons->sum('duration_seconds') / 60),
-            'enrolled' => $enrolled,
+            'enrolled' => true,
         ];
     }
 }

@@ -23,7 +23,7 @@ export default function StudentLayout({ children }: PropsWithChildren) {
     const links: { href: string; label: string; icon: IconName; active: boolean }[] = [
         { href: '/dashboard', label: 'Início', icon: 'home', active: url.startsWith('/dashboard') },
         { href: '/my-courses', label: 'Meus cursos', icon: 'book', active: url.startsWith('/my-courses') },
-        { href: '/courses', label: 'Explorar', icon: 'compass', active: url.startsWith('/courses') },
+        { href: '/courses', label: 'Disponível', icon: 'compass', active: url.startsWith('/courses') },
         { href: '/certificates', label: 'Certificados', icon: 'certificate', active: url.startsWith('/certificates') },
         { href: '/profile', label: 'Perfil', icon: 'profile', active: url.startsWith('/profile') },
     ];

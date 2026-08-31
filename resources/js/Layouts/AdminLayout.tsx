@@ -2,12 +2,14 @@ import BrandLogo from '@/Components/BrandLogo';
 import { Link } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 
-type IconName = 'overview' | 'courses' | 'catalog' | 'profile' | 'logout' | 'menu' | 'close';
+type IconName = 'overview' | 'courses' | 'programs' | 'sales' | 'catalog' | 'profile' | 'logout' | 'menu' | 'close';
 
 function Icon({ name }: { name: IconName }) {
     const paths: Record<IconName, ReactNode> = {
         overview: <><rect height="7" rx="1" width="7" x="3" y="3" /><rect height="7" rx="1" width="7" x="14" y="3" /><rect height="7" rx="1" width="7" x="3" y="14" /><rect height="7" rx="1" width="7" x="14" y="14" /></>,
         courses: <><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H10v17H5.5A2.5 2.5 0 0 0 3 22V5.5Z" /><path d="M21 5.5A2.5 2.5 0 0 0 18.5 3H14v17h4.5A2.5 2.5 0 0 1 21 22V5.5Z" /></>,
+        programs: <><rect height="14" rx="2" width="18" x="3" y="5" /><path d="M7 9h10M7 13h7" /></>,
+        sales: <><path d="M5 21V9m7 12V3m7 18v-7" /><path d="M3 21h18" /></>,
         catalog: <><path d="M14 3h7v7" /><path d="m21 3-9 9" /><path d="M19 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h6" /></>,
         profile: <><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>,
         logout: <><path d="M10 17l5-5-5-5" /><path d="M15 12H3" /><path d="M21 19V5a2 2 0 0 0-2-2h-5" /></>,
@@ -21,6 +23,8 @@ function Icon({ name }: { name: IconName }) {
 const navigation = [
     { href: '/admin', icon: 'overview' as const, label: 'Visão geral' },
     { href: '/admin/courses', icon: 'courses' as const, label: 'Cursos' },
+    { href: '/admin/programs', icon: 'programs' as const, label: 'Programas' },
+    { href: '/admin/sales', icon: 'sales' as const, label: 'Vendas' },
 ];
 
 function Navigation({ close }: { close?: () => void }) {

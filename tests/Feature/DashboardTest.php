@@ -76,12 +76,11 @@ class DashboardTest extends TestCase
                 ->has('courses', 0)
                 ->where('continueLearning', null)
                 ->has('featuredCourses', 0)
-                ->has('newCourses', 0)
-                ->has('recommendedCourses', 0)
+                ->has('offers', 0)
             );
     }
 
-    public function test_dashboard_provides_course_discovery_and_editorial_learning_data(): void
+    public function test_dashboard_does_not_recommend_unassigned_published_courses(): void
     {
         $student = User::factory()->create();
         $enrolledCourse = Course::query()->create([
@@ -119,9 +118,8 @@ class DashboardTest extends TestCase
                 ->missing('courses.0.videoId')
                 ->where('continueLearning.lessonId', $lesson->id)
                 ->where('featuredCourses.0.id', $enrolledCourse->id)
-                ->where('newCourses.0.id', $recommendedCourse->id)
-                ->where('recommendedCourses.0.id', $recommendedCourse->id)
-                ->where('recommendedCourses.0.enrolled', false)
+                ->has('offers', 0)
+                ->missing('recommendedCourses')
             );
     }
 }

@@ -270,7 +270,7 @@ class CourseBuilderTest extends TestCase
         $student = User::factory()->create(['role' => UserRole::Student]);
         Enrollment::query()->create(['user_id' => $student->id, 'course_id' => $course->id]);
 
-        $this->actingAs($student)->get('/courses')->assertInertia(fn (Assert $page) => $page->has('courses', 0));
+        $this->actingAs($student)->get('/courses')->assertInertia(fn (Assert $page) => $page->has('offers', 0));
         $this->actingAs($student)->get("/courses/{$course->slug}")->assertForbidden();
         $this->actingAs($student)->get("/lessons/{$lesson->id}")->assertForbidden();
     }
@@ -292,7 +292,7 @@ class CourseBuilderTest extends TestCase
             );
     }
 
-    public function test_catalog_returns_the_asex_cover_data_when_course_has_no_cover(): void
+    public function test_available_programs_do_not_expose_an_unassigned_published_course(): void
     {
         $course = $this->course();
         $this->lesson($this->module($course));
@@ -300,10 +300,7 @@ class CourseBuilderTest extends TestCase
         $student = User::factory()->create(['role' => UserRole::Student]);
 
         $this->actingAs($student)->get('/courses')
-            ->assertInertia(fn (Assert $page) => $page
-                ->where('courses.0.thumbnailPath', null)
-                ->missing('courses.0.videoId')
-            );
+            ->assertInertia(fn (Assert $page) => $page->has('offers', 0));
     }
 
     public function test_admin_can_preview_a_draft_course_without_creating_enrollment_or_progress(): void

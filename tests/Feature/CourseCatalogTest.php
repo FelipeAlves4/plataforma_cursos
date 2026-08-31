@@ -55,7 +55,7 @@ class CourseCatalogTest extends TestCase
             );
     }
 
-    public function test_catalog_returns_published_courses_with_filter_and_enrollment_states(): void
+    public function test_available_programs_do_not_expose_unassigned_published_courses(): void
     {
         $student = User::factory()->create();
         $completedCourse = $this->course('Curso concluído', 'curso-concluido', 'Operação', 'Intermediário', 1);
@@ -67,24 +67,10 @@ class CourseCatalogTest extends TestCase
         LessonProgress::query()->create(['user_id' => $student->id, 'lesson_id' => $completedCourse->modules->first()->lessons->first()->id, 'completed' => true]);
         LessonProgress::query()->create(['user_id' => $student->id, 'lesson_id' => $inProgressCourse->modules->first()->lessons->first()->id, 'completed' => true]);
 
-        $response = $this->actingAs($student)->get('/courses');
-        $response->assertInertia(fn (Assert $page) => $page
-            ->component('Courses/Index')
-            ->has('courses', 3)
-        );
-        $courses = collect($response->inertiaProps('courses'))->keyBy('slug');
-
-        $this->assertSame('available', $courses['curso-disponivel']['status']);
-        $this->assertSame('http://localhost:8000/storage/courses/capa.jpg', $courses['curso-disponivel']['thumbnailPath']);
-        $this->assertArrayNotHasKey('videoId', $courses['curso-disponivel']);
-        $this->assertSame('in_progress', $courses['curso-em-andamento']['status']);
-        $this->assertSame('completed', $courses['curso-concluido']['status']);
-
-        $this->actingAs($student)->get('/courses?category=Operação&level=Intermediário')
+        $this->actingAs($student)->get('/courses')
             ->assertInertia(fn (Assert $page) => $page
-                ->has('courses', 2)
-                ->where('filters.category', 'Operação')
-                ->where('filters.level', 'Intermediário')
+                ->component('Courses/Index')
+                ->has('offers', 0)
             );
 
         $this->assertModelExists($draftCourse);

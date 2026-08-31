@@ -5,13 +5,20 @@ use App\Http\Controllers\Admin\CourseModuleController as AdminCourseModuleContro
 use App\Http\Controllers\Admin\CoursePreviewController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\LessonController as AdminLessonController;
+use App\Http\Controllers\Admin\OfferController as AdminOfferController;
+use App\Http\Controllers\Admin\ProgramController as AdminProgramController;
+use App\Http\Controllers\Admin\SaleController as AdminSaleController;
 use App\Http\Controllers\Admin\StudentController as AdminStudentController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InfinitePayWebhookController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\LessonProgressController;
+use App\Http\Controllers\OfferCheckoutController;
+use App\Http\Controllers\OrderStatusController;
+use App\Http\Controllers\PaymentReturnController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +26,9 @@ Route::get('/', LandingController::class)->name('home');
 
 Route::get('/certificates/verify/{verificationCode}', [CertificateController::class, 'verify'])
     ->name('certificates.verify');
+
+Route::post('/webhooks/infinitepay', InfinitePayWebhookController::class)
+    ->name('webhooks.infinitepay');
 
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])
@@ -34,6 +44,9 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/lessons/{lesson}', [LessonController::class, 'show'])->name('lessons.show');
     Route::put('/lessons/{lesson}/progress', [LessonProgressController::class, 'update'])
         ->name('lessons.progress.update');
+    Route::post('/offers/{offer}/checkout', OfferCheckoutController::class)->name('offers.checkout');
+    Route::get('/payments/infinitepay/return', PaymentReturnController::class)->name('payments.infinitepay.return');
+    Route::get('/orders/{order}/status', OrderStatusController::class)->name('orders.status');
 });
 
 Route::prefix('admin')
@@ -42,6 +55,13 @@ Route::prefix('admin')
     ->group(function (): void {
         Route::get('/', AdminDashboardController::class)->name('dashboard');
         Route::resource('courses', AdminCourseController::class)->except('show');
+        Route::resource('programs', AdminProgramController::class)->except(['show', 'destroy']);
+        Route::get('offers/create', [AdminOfferController::class, 'create'])->name('offers.create');
+        Route::post('offers', [AdminOfferController::class, 'store'])->name('offers.store');
+        Route::get('offers/{offer}', [AdminOfferController::class, 'show'])->name('offers.show');
+        Route::delete('offers/{offer}', [AdminOfferController::class, 'destroy'])->name('offers.destroy');
+        Route::get('sales', [AdminSaleController::class, 'index'])->name('sales.index');
+        Route::get('sales/{order}', [AdminSaleController::class, 'show'])->name('sales.show');
         Route::get('courses/{course}/preview', CoursePreviewController::class)->name('courses.preview');
         Route::post('courses/{course}/modules', [AdminCourseModuleController::class, 'store'])->name('courses.modules.store');
         Route::put('courses/{course}/modules/reorder', [AdminCourseModuleController::class, 'reorder'])->name('courses.modules.reorder');

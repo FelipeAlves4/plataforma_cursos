@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'infinitepay' => [
+        'handle' => env('INFINITEPAY_HANDLE'),
+        'redirect_url' => env('INFINITEPAY_REDIRECT_URL'),
+        'webhook_url' => env('INFINITEPAY_WEBHOOK_URL'),
+    ],
+
 ];
