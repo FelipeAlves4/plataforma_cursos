@@ -77,7 +77,7 @@ class PaymentFulfillmentService
         }, attempts: 3);
 
         if ($activationOrder instanceof Order) {
-            $activationOrder->user->notify(new CheckoutAccessReady($activationOrder));
+            $activationOrder->user->notify((new CheckoutAccessReady($activationOrder))->afterCommit());
         }
 
         return $fulfilledOrder;
@@ -114,7 +114,7 @@ class PaymentFulfillmentService
                 'role' => UserRole::Student,
                 'phone' => $lead->phone,
             ]);
-            $user->forceFill(['email_verified_at' => now()])->save();
+            $user->save();
         }
 
         $order->update([

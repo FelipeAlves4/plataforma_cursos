@@ -1,6 +1,6 @@
 # Asex Educação — Plataforma de Cursos
 
-Plataforma de aprendizagem para profissionais e negócios do setor de alimentação. O fluxo atual inclui login, matrícula, catálogo, aulas em vídeo e progresso, sem pagamentos ou checkout.
+Plataforma de aprendizagem para profissionais e negócios do setor de alimentação. O fluxo inclui login, matrícula, catálogo, aulas em vídeo, progresso e checkout público com confirmação de pagamento.
 
 ## Stack e arquitetura
 
@@ -99,12 +99,8 @@ QUEUE_CONNECTION=database
 FILESYSTEM_DISK=public
 TRUSTED_PROXIES=*
 
-MAIL_MAILER=smtp
-MAIL_HOST=
-MAIL_PORT=587
-MAIL_USERNAME=
-MAIL_PASSWORD=
-MAIL_SCHEME=tls
+MAIL_MAILER=resend
+RESEND_API_KEY=
 MAIL_FROM_ADDRESS=
 MAIL_FROM_NAME="Asex Educação"
 
@@ -154,9 +150,9 @@ O comando solicita nome, e-mail, senha e confirmação. Ele exige senha forte, c
 
 ### 6. E-mail
 
-`MAIL_MAILER=log` serve somente para desenvolvimento. Em produção, configure SMTP de Resend, Brevo ou do provedor corporativo. O reset de senha depende de e-mail real.
+`MAIL_MAILER=log` serve somente para desenvolvimento. Em produção, use o driver oficial da Resend com `MAIL_MAILER=resend`, `RESEND_API_KEY` e um domínio/remetente verificado. A chave fica somente nas variáveis protegidas do Railway; nunca no repositório. O reset de senha e a ativação do checkout dependem de e-mail real.
 
-As rotas de verificação existem, mas o modelo `User` atualmente não implementa `MustVerifyEmail`; portanto, novos cadastros não ficam bloqueados aguardando verificação. Não altere esse comportamento sem uma decisão de produto e SMTP funcionando.
+O modelo `User` não implementa `MustVerifyEmail`. No checkout público, o novo aluno só é marcado como verificado depois de concluir a criação de senha no link temporário assinado; isso não altera o comportamento dos cadastros existentes.
 
 ### 7. Domínio e HTTPS
 
@@ -174,7 +170,15 @@ Não há redirecionamento `www` porque o domínio definitivo ainda não foi esco
 
 ### 8. Filas e logs
 
-As migrations já criam `jobs`, `job_batches` e `failed_jobs`, mas não existem jobs próprios no código atual. Não crie um worker Railway agora. Quando surgirem jobs assíncronos, adicione um segundo serviço com a mesma imagem e comando `php artisan queue:work --sleep=3 --tries=3`.
+As migrations criam `jobs`, `job_batches` e `failed_jobs`; a ativação de acesso do checkout agora envia e-mail por fila. O serviço web não processa esses jobs sozinho.
+
+No Railway, crie um segundo serviço persistente chamado, por exemplo, `queue-worker`, a partir do mesmo repositório/imagem da aplicação. Copie para ele as variáveis de produção da aplicação — em especial `DATABASE_URL`, `QUEUE_CONNECTION=database`, `MAIL_MAILER=resend`, `RESEND_API_KEY`, `APP_KEY` e `APP_URL` — e configure em **Settings → Deploy → Start Command**:
+
+```bash
+php artisan queue:work --tries=3 --timeout=60
+```
+
+Não exponha networking público nesse worker. Mantenha a política de reinício em `On Failure`. O `retry_after` da fila database é 90 segundos, maior que o timeout de 60 segundos, evitando processamento duplicado por expiração prematura. Antes de ativar `MAIL_MAILER=resend` em produção, confirme no Railway que o worker está em execução e que a tabela `jobs` reduz após uma compra de teste controlada.
 
 Use `LOG_CHANNEL=stderr` para que os logs apareçam no Railway. Não registre senhas, tokens, `APP_KEY` ou credenciais de banco.
 
@@ -196,7 +200,9 @@ Use `LOG_CHANNEL=stderr` para que os logs apareçam no Railway. Não registre se
 - [ ] Volume montado em `/app/storage/app/public`
 - [ ] backup do PostgreSQL e do Volume configurado
 - [ ] primeiro admin criado com `asex:create-admin`
-- [ ] SMTP configurado e reset de senha testado
+- [ ] e-mail transacional configurado e reset de senha testado
+- [ ] Resend configurada com domínio/remetente verificado
+- [ ] worker Railway executando `php artisan queue:work --tries=3 --timeout=60`
 - [ ] login e cookies seguros funcionando
 - [ ] upload, substituição e exclusão de thumbnail testados
 - [ ] player YouTube funcionando

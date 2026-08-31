@@ -13,10 +13,13 @@ use App\Models\Order;
 use App\Models\Program;
 use App\Models\User;
 use App\Notifications\CheckoutAccessReady;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request as ClientRequest;
+use Illuminate\Notifications\SendQueuedNotifications;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\URL;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -137,7 +140,7 @@ class PublicCheckoutTest extends TestCase
         $this->assertDatabaseCount('enrollments', 0);
     }
 
-    public function test_verified_webhook_creates_a_new_student_enrolls_the_snapshot_once_and_sends_activation(): void
+    public function test_verified_webhook_creates_an_unverified_student_enrolls_the_snapshot_once_and_queues_activation(): void
     {
         Notification::fake();
         $this->fakePaidPaymentCheck();
@@ -154,11 +157,24 @@ class PublicCheckoutTest extends TestCase
         $student = User::query()->where('email', 'new.student@example.test')->firstOrFail();
         $this->assertSame(OrderStatus::Paid, $order->status);
         $this->assertSame($student->id, $order->user_id);
+        $this->assertNull($student->email_verified_at);
         $this->assertNotNull($order->activation_expires_at);
         $this->assertSame(2, Enrollment::query()->where('user_id', $student->id)->count());
         $this->assertDatabaseMissing('enrollments', ['user_id' => $student->id, 'course_id' => $outsideCourse->id]);
         Notification::assertSentTo($student, CheckoutAccessReady::class);
         $this->assertCount(1, Notification::sent($student, CheckoutAccessReady::class));
+    }
+
+    public function test_checkout_access_notification_is_queued(): void
+    {
+        Queue::fake();
+        $order = $this->publicOrder($this->checkoutLink(), 'queue@example.test');
+        $student = User::factory()->create();
+
+        $student->notify(new CheckoutAccessReady($order));
+
+        $this->assertInstanceOf(ShouldQueue::class, new CheckoutAccessReady($order));
+        Queue::assertPushed(SendQueuedNotifications::class, fn (SendQueuedNotifications $job): bool => $job->notification instanceof CheckoutAccessReady);
     }
 
     public function test_verified_webhook_reuses_an_existing_user_by_normalized_email_without_sending_activation(): void
@@ -172,6 +188,7 @@ class PublicCheckoutTest extends TestCase
 
         $order->refresh();
         $this->assertSame($existingStudent->id, $order->user_id);
+        $this->assertNotNull($existingStudent->email_verified_at);
         $this->assertNull($order->activation_expires_at);
         $this->assertSame(1, User::query()->whereRaw('LOWER(email) = ?', ['existing@example.test'])->count());
         $this->assertSame(2, Enrollment::query()->where('user_id', $existingStudent->id)->count());
@@ -203,6 +220,8 @@ class PublicCheckoutTest extends TestCase
         $order->refresh();
         $activationUrl = URL::temporarySignedRoute('checkout.access.create', $order->activation_expires_at, ['order' => $order]);
 
+        $this->assertNull($order->user->email_verified_at);
+
         $this->get($activationUrl)
             ->assertInertia(fn (Assert $page) => $page->component('Checkout/SetPassword'));
         $this->post($activationUrl, ['password' => 'StrongPassword!123', 'password_confirmation' => 'StrongPassword!123'])
@@ -210,7 +229,25 @@ class PublicCheckoutTest extends TestCase
 
         $this->assertAuthenticatedAs($order->user);
         $this->assertNotNull($order->fresh()->activation_used_at);
+        $this->assertNotNull($order->user->fresh()->email_verified_at);
         $this->post($activationUrl, ['password' => 'AnotherStrong!123', 'password_confirmation' => 'AnotherStrong!123'])->assertNotFound();
+    }
+
+    public function test_expired_activation_link_does_not_activate_the_account(): void
+    {
+        Notification::fake();
+        $this->fakePaidPaymentCheck();
+        $order = $this->publicOrder($this->checkoutLink(), 'expired@example.test');
+        $this->postJson('/webhooks/infinitepay', $this->webhookPayload($order))->assertOk();
+        $order->refresh();
+        $activationUrl = URL::temporarySignedRoute('checkout.access.create', $order->activation_expires_at, ['order' => $order]);
+
+        $this->travelTo($order->activation_expires_at->addSecond());
+        $this->get($activationUrl)->assertForbidden();
+
+        $this->assertNull($order->fresh()->activation_used_at);
+        $this->assertNull($order->user->fresh()->email_verified_at);
+        $this->travelBack();
     }
 
     private function checkoutLink(array $attributes = []): CheckoutLink

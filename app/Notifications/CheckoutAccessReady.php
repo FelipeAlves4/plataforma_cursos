@@ -4,11 +4,13 @@ namespace App\Notifications;
 
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 
-class CheckoutAccessReady extends Notification
+class CheckoutAccessReady extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -54,5 +56,13 @@ class CheckoutAccessReady extends Notification
         return [
             'order_id' => $this->order->id,
         ];
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        Log::error('Checkout access notification failed.', [
+            'order_id' => $this->order->id,
+            'exception' => $exception->getMessage(),
+        ]);
     }
 }
