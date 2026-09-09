@@ -72,6 +72,8 @@ Route::prefix('admin')
         Route::resource('programs', AdminProgramController::class)->except(['show', 'destroy']);
         Route::get('checkout-links', [AdminCheckoutLinkController::class, 'index'])->name('checkout-links.index');
         Route::post('checkout-links', [AdminCheckoutLinkController::class, 'store'])->name('checkout-links.store');
+        Route::get('checkout-links/{checkoutLink}', [AdminCheckoutLinkController::class, 'show'])->name('checkout-links.show');
+        Route::post('checkout-links/{checkoutLink}/duplicate', [AdminCheckoutLinkController::class, 'duplicate'])->name('checkout-links.duplicate');
         Route::patch('checkout-links/{checkoutLink}', [AdminCheckoutLinkController::class, 'update'])->name('checkout-links.update');
         Route::get('offers/create', [AdminOfferController::class, 'create'])->name('offers.create');
         Route::post('offers', [AdminOfferController::class, 'store'])->name('offers.store');

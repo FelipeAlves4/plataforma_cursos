@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['program_id', 'slug', 'token', 'price_cents', 'active', 'expires_at', 'created_by'])]
+#[Fillable(['program_id', 'name', 'slug', 'token', 'price_cents', 'active', 'expires_at', 'created_by'])]
 class CheckoutLink extends Model
 {
     /** @use HasFactory<CheckoutLinkFactory> */

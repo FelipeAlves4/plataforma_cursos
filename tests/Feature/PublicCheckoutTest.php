@@ -110,21 +110,122 @@ class PublicCheckoutTest extends TestCase
         $this->assertDatabaseCount('orders', 0);
     }
 
-    public function test_administrator_can_create_and_deactivate_a_checkout_link(): void
+    public function test_administrator_can_create_name_and_deactivate_a_checkout_link_without_deleting_its_history(): void
     {
         $sourceLink = $this->checkoutLink();
         $admin = User::query()->findOrFail($sourceLink->created_by);
+        $paidOrder = $this->publicOrder($sourceLink, 'historico@example.test');
+        $paidOrder->update(['status' => OrderStatus::Paid, 'paid_at' => now()]);
 
         $this->actingAs($admin)->post('/admin/checkout-links', [
+            'name' => 'Campanha Setembro',
             'program_id' => $sourceLink->program_id,
             'price_cents' => 49700,
         ])->assertRedirect();
 
         $checkoutLink = CheckoutLink::query()->latest('id')->firstOrFail();
+        $this->assertSame('Campanha Setembro', $checkoutLink->name);
         $this->assertSame(49700, $checkoutLink->price_cents);
         $this->assertSame(64, strlen($checkoutLink->token));
         $this->actingAs($admin)->patch("/admin/checkout-links/{$checkoutLink->id}", ['active' => false])->assertRedirect();
         $this->assertFalse($checkoutLink->fresh()->active);
+
+        $this->actingAs($admin)->patch("/admin/checkout-links/{$sourceLink->id}", ['active' => false])->assertRedirect();
+        $this->assertModelExists($paidOrder);
+        $this->assertDatabaseHas('orders', ['id' => $paidOrder->id, 'status' => OrderStatus::Paid->value]);
+    }
+
+    public function test_administrator_can_duplicate_a_checkout_link_with_a_new_secure_token(): void
+    {
+        $sourceLink = $this->checkoutLink(['name' => 'WhatsApp Comercial']);
+        $admin = User::query()->findOrFail($sourceLink->created_by);
+
+        $this->actingAs($admin)->post("/admin/checkout-links/{$sourceLink->id}/duplicate")->assertRedirect();
+
+        $duplicate = CheckoutLink::query()->latest('id')->firstOrFail();
+        $this->assertSame($sourceLink->program_id, $duplicate->program_id);
+        $this->assertSame($sourceLink->price_cents, $duplicate->price_cents);
+        $this->assertSame('WhatsApp Comercial (cópia)', $duplicate->name);
+        $this->assertSame(64, strlen($duplicate->token));
+        $this->assertNotSame($sourceLink->token, $duplicate->token);
+    }
+
+    public function test_admin_checkout_link_metrics_and_rows_use_only_paid_orders(): void
+    {
+        $link = $this->checkoutLink(['name' => 'Evento Marília']);
+        $admin = User::query()->findOrFail($link->created_by);
+
+        $this->createOrderForLink($link, OrderStatus::Paid, 12500);
+        $this->createOrderForLink($link, OrderStatus::Pending, 9500);
+        $this->createOrderForLink($link, OrderStatus::Failed, 8500);
+
+        $this->actingAs($admin)->get('/admin/checkout-links')
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/CheckoutLinks/Index')
+                ->where('summary.activeLinks', 1)
+                ->where('summary.confirmedSales', 1)
+                ->where('summary.revenueCents', 12500)
+                ->has('links', 1)
+                ->where('links.0.name', 'Evento Marília')
+                ->where('links.0.salesCount', 1)
+                ->where('links.0.revenueCents', 12500)
+            );
+    }
+
+    public function test_admin_checkout_link_details_include_only_confirmed_sales(): void
+    {
+        $link = $this->checkoutLink(['name' => 'Campanha Setembro']);
+        $admin = User::query()->findOrFail($link->created_by);
+        $paidOrder = $this->publicOrder($link, 'pago@example.test');
+        $paidOrder->update(['status' => OrderStatus::Paid, 'paid_at' => now()]);
+        $this->publicOrder($link, 'pendente@example.test');
+
+        $this->actingAs($admin)->get("/admin/checkout-links/{$link->id}")
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/CheckoutLinks/Show')
+                ->where('link.name', 'Campanha Setembro')
+                ->where('link.salesCount', 1)
+                ->where('link.revenueCents', 69700)
+                ->has('link.latestSales', 1)
+                ->where('link.latestSales.0.name', 'Ana da Silva')
+                ->where('link.latestSales.0.email', 'pago@example.test')
+                ->where('link.latestSales.0.amountCents', 69700)
+                ->where('link.latestSales.0.status', OrderStatus::Paid->value)
+            );
+    }
+
+    public function test_admin_checkout_link_list_provides_distinct_statuses_for_filters(): void
+    {
+        $activeLink = $this->checkoutLink();
+        $admin = User::query()->findOrFail($activeLink->created_by);
+        $expiredLink = CheckoutLink::query()->create([
+            'program_id' => $activeLink->program_id,
+            'slug' => 'expirado-'.str()->random(8),
+            'token' => str()->random(64),
+            'price_cents' => $activeLink->price_cents,
+            'expires_at' => now()->subMinute(),
+            'created_by' => $admin->id,
+        ]);
+        $inactiveLink = CheckoutLink::query()->create([
+            'program_id' => $activeLink->program_id,
+            'slug' => 'inativo-'.str()->random(8),
+            'token' => str()->random(64),
+            'price_cents' => $activeLink->price_cents,
+            'active' => false,
+            'created_by' => $admin->id,
+        ]);
+
+        $this->actingAs($admin)->get('/admin/checkout-links')
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/CheckoutLinks/Index')
+                ->has('links', 3)
+                ->where('links.0.id', $inactiveLink->id)
+                ->where('links.0.status', 'INACTIVE')
+                ->where('links.1.id', $expiredLink->id)
+                ->where('links.1.status', 'EXPIRED')
+                ->where('links.2.id', $activeLink->id)
+                ->where('links.2.status', 'ACTIVE')
+            );
     }
 
     public function test_public_checkout_error_is_returned_to_the_buyer(): void
@@ -295,6 +396,19 @@ class PublicCheckoutTest extends TestCase
         $order->courses()->sync($link->program->courses()->pluck('courses.id'));
 
         return $order;
+    }
+
+    private function createOrderForLink(CheckoutLink $link, OrderStatus $status, int $amountCents): Order
+    {
+        return Order::query()->create([
+            'checkout_link_id' => $link->id,
+            'program_id' => $link->program_id,
+            'program_name_snapshot' => $link->program->name,
+            'order_nsu' => 'ASEX-'.str()->upper(str()->random(16)),
+            'amount_cents' => $amountCents,
+            'status' => $status,
+            'paid_at' => $status === OrderStatus::Paid ? now() : null,
+        ]);
     }
 
     /** @return array{invoice_slug: string, amount: int, transaction_nsu: string, order_nsu: string} */

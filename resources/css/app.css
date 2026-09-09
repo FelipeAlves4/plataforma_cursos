@@ -67,9 +67,11 @@
     .admin-shell .admin-page-header { @apply flex flex-col gap-5 border-b border-white/10 pb-7 sm:flex-row sm:items-end sm:justify-between; }
     .admin-shell .admin-page-header h1 { @apply mt-2 text-3xl font-black tracking-tight text-[#F8F7FB] sm:text-4xl; }
     .admin-shell .admin-page-header p:not(.admin-eyebrow) { @apply mt-2 max-w-2xl text-sm leading-6 text-[#9D93B8] sm:text-base; }
+    .admin-shell .checkout-links-header { @apply border-b-0 pb-0; }
     .admin-shell .admin-page-title { @apply mt-2 text-3xl font-black tracking-tight text-[#F8F7FB] sm:text-4xl; }
     .admin-shell .admin-page-subtitle { @apply mt-2 max-w-2xl text-sm leading-6 text-[#9D93B8] sm:text-base; }
     .admin-shell .admin-primary-button { @apply inline-flex w-fit shrink-0 items-center justify-center rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,.1),0_8px_24px_rgba(100,41,170,.22)] transition hover:brightness-110 focus-visible:ring-[#9347DD] focus-visible:ring-offset-[#08060D]; background: linear-gradient(135deg, #6429AA 0%, #9347DD 100%); }
+    .admin-shell .checkout-links-primary { @apply shadow-[0_8px_24px_rgba(100,41,170,.25)] hover:bg-[#8138C5] hover:brightness-100; background: #6429AA; }
     .admin-shell .admin-secondary-link { @apply inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-bold text-[#C084FC] transition hover:bg-[#6429AA]/15 hover:text-[#E9D5FF] focus-visible:ring-[#9347DD] focus-visible:ring-offset-[#08060D]; }
     .admin-shell .admin-field { @apply flex flex-col gap-2 text-sm font-bold text-[#F8F7FB]; }
     .admin-shell .admin-field > input, .admin-shell .admin-field > select, .admin-shell .admin-field > textarea { @apply w-full rounded-xl border px-3 py-2.5 text-sm font-normal leading-6; }
@@ -141,5 +143,11 @@
         transition-duration: 0.01ms !important;
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
+    }
+}
+
+@media (max-width: 420px) {
+    .admin-shell [role='tablist'][aria-label='Status dos links'] [role='tab'] {
+        @apply px-2.5 text-xs;
     }
 }

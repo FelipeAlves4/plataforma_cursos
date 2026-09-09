@@ -9,6 +9,13 @@ use Illuminate\Validation\Rule;
 
 class StoreCheckoutLinkRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $name = $this->string('name')->trim()->toString();
+
+        $this->merge(['name' => $name === '' ? null : $name]);
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -25,6 +32,7 @@ class StoreCheckoutLinkRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'name' => ['nullable', 'string', 'max:120'],
             'program_id' => ['required', 'integer', Rule::exists(Program::class, 'id')->where('active', true)],
             'price_cents' => ['required', 'integer', 'min:2'],
             'expires_at' => ['nullable', 'date', 'after:now'],
