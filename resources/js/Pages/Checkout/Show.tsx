@@ -21,6 +21,15 @@ type Checkout = {
     };
 };
 
+type TrustIconName = 'lock' | 'shield' | 'compliance' | 'access';
+
+const trustSignals: { title: string; description: string; icon: TrustIconName }[] = [
+    { title: 'Pagamento protegido', description: 'Criptografia de ponta a ponta', icon: 'lock' },
+    { title: 'Antifraude', description: 'Proteção nas transações', icon: 'shield' },
+    { title: 'PCI DSS', description: 'Processamento em conformidade', icon: 'compliance' },
+    { title: 'Acesso automático', description: 'Após confirmação do pagamento', icon: 'access' },
+];
+
 function ArrowIcon() {
     return <svg aria-hidden="true" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 20 20"><path d="M3.5 10h12m-4.5-4.5L15.5 10 11 14.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" /></svg>;
 }
@@ -31,6 +40,22 @@ function CheckIcon() {
 
 function LockIcon() {
     return <svg aria-hidden="true" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 20 20"><rect height="9" rx="1.5" stroke="currentColor" strokeWidth="1.5" width="12" x="4" y="8" /><path d="M6.75 8V5.75a3.25 3.25 0 0 1 6.5 0V8" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" /></svg>;
+}
+
+function TrustIcon({ name }: { name: TrustIconName }) {
+    if (name === 'shield') {
+        return <svg aria-hidden="true" className="h-[1.125rem] w-[1.125rem]" fill="none" viewBox="0 0 20 20"><path d="M10 2.75 16 5v4.3c0 3.76-2.38 6.45-6 7.95-3.62-1.5-6-4.19-6-7.95V5l6-2.25Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.45" /><path d="m7.2 10 1.75 1.75 3.85-4.1" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.45" /></svg>;
+    }
+
+    if (name === 'compliance') {
+        return <svg aria-hidden="true" className="h-[1.125rem] w-[1.125rem]" fill="none" viewBox="0 0 20 20"><rect height="14" rx="2" stroke="currentColor" strokeWidth="1.45" width="12" x="4" y="3" /><path d="M7 7h6M7 10h3" stroke="currentColor" strokeLinecap="round" strokeWidth="1.45" /><path d="m11.4 13.2 1.15 1.15L15 11.9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.45" /></svg>;
+    }
+
+    if (name === 'access') {
+        return <svg aria-hidden="true" className="h-[1.125rem] w-[1.125rem]" fill="none" viewBox="0 0 20 20"><circle cx="7" cy="10" r="3" stroke="currentColor" strokeWidth="1.45" /><path d="M10 10h6m-2 0v2m-2-2v2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.45" /></svg>;
+    }
+
+    return <svg aria-hidden="true" className="h-[1.125rem] w-[1.125rem]" fill="none" viewBox="0 0 20 20"><rect height="9" rx="1.5" stroke="currentColor" strokeWidth="1.45" width="12" x="4" y="8" /><path d="M6.75 8V5.75a3.25 3.25 0 0 1 6.5 0V8" stroke="currentColor" strokeLinecap="round" strokeWidth="1.45" /></svg>;
 }
 
 function ProgressMark() {
@@ -125,9 +150,23 @@ export default function Show({ checkout }: { checkout: Checkout }) {
                                 </button>
                             </form>
 
-                            <div className="mt-6 border-t border-white/[0.1] pt-5">
-                                <p className="flex items-center justify-center gap-2 text-center text-xs leading-5 text-[#B7AFC5]"><LockIcon />Pagamento processado em ambiente seguro pela InfinitePay.</p>
-                                <p className="mt-4 text-center text-xs leading-5 text-[#837A95]">Ao continuar, você concorda com a <a className="checkout-legal-link" href="/#privacidade">Política de Privacidade</a> e os <a className="checkout-legal-link" href="/#termos">Termos de Uso</a>.</p>
+                            <div className="mt-6">
+                                <ul aria-label="Segurança e processamento do pagamento" className="checkout-trust-grid">
+                                    {trustSignals.map((signal) => (
+                                        <li className="checkout-trust-item" key={signal.title}>
+                                            <span className="checkout-trust-icon"><TrustIcon name={signal.icon} /></span>
+                                            <p className="checkout-trust-title">{signal.title}</p>
+                                            <p className="checkout-trust-description">{signal.description}</p>
+                                        </li>
+                                    ))}
+                                </ul>
+
+                                <div className="mt-5 text-center">
+                                    <p className="flex items-center justify-center gap-2 text-xs leading-5 text-[#C8C0D5]"><LockIcon />Pagamento processado com segurança pela InfinitePay</p>
+                                    <p className="mt-1.5 text-[0.7rem] leading-5 text-[#837A95]">Os dados do pagamento são processados no ambiente da InfinitePay.</p>
+                                </div>
+
+                                <p className="mt-5 border-t border-white/[0.08] pt-5 text-center text-xs leading-5 text-[#837A95]">Ao continuar, você concorda com a <a className="checkout-legal-link" href="/#privacidade">Política de Privacidade</a> e os <a className="checkout-legal-link" href="/#termos">Termos de Uso</a>.</p>
                             </div>
                         </div>
                     </div>
