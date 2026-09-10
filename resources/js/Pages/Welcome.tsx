@@ -1,35 +1,32 @@
-import CourseCover from '@/Components/CourseCover';
 import BrandLogo from '@/Components/BrandLogo';
+import PortalBackdrop from '@/Components/PortalBackdrop';
 import { PageProps } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { PointerEvent } from 'react';
 
 type Course = { id: number; title: string; slug: string; description?: string | null; thumbnailPath?: string | null; category?: string | null; lessonCount: number };
 
-export default function Welcome({ auth, courses }: PageProps<{ courses: Course[] }>) {
-    const [menuOpen, setMenuOpen] = useState(false);
+export default function Welcome({ auth }: PageProps<{ courses: Course[] }>) {
+    const moveBackdrop = (event: PointerEvent<HTMLDivElement>): void => {
+        const bounds = event.currentTarget.getBoundingClientRect();
+        event.currentTarget.style.setProperty('--portal-pointer-x', `${((event.clientX - bounds.left) / bounds.width) * 100}%`);
+        event.currentTarget.style.setProperty('--portal-pointer-y', `${((event.clientY - bounds.top) / bounds.height) * 100}%`);
+    };
 
     return <>
-        <Head title="Asex Educação" />
-        <div className="min-h-screen bg-ink text-white">
-            <header className="border-b border-white/10">
-                <nav className="mx-auto max-w-7xl px-5">
-                    <div className="flex h-20 items-center justify-between gap-4">
-                        <BrandLogo href="/" className="h-11 w-40" />
-                        <div className="hidden gap-7 text-sm font-semibold text-white/70 md:flex"><a href="#cursos" className="hover:text-white">Cursos</a><a href="#como-funciona" className="hover:text-white">Como funciona</a><a href="#beneficios" className="hover:text-white">Benefícios</a></div>
-                        <div className="hidden items-center gap-3 text-sm font-semibold md:flex">{auth.user ? <Link href="/dashboard" className="rounded-lg bg-white px-4 py-2 text-ink">Acessar plataforma</Link> : <><Link href="/login" className="text-white/80 hover:text-white">Entrar</Link><Link href="/register" className="asex-gradient rounded-lg px-4 py-2 text-white shadow-lg">Criar conta</Link></>}</div>
-                        <button type="button" aria-controls="landing-navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)} className="rounded-lg p-2 text-white hover:bg-white/10 focus-visible:ring-white md:hidden"><span className="sr-only">{menuOpen ? 'Fechar menu' : 'Abrir menu'}</span><span aria-hidden className="text-xl">{menuOpen ? '×' : '☰'}</span></button>
-                    </div>
-                    {menuOpen && <div id="landing-navigation" className="border-t border-white/10 py-3 text-sm font-semibold md:hidden"><a onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-white/80 hover:bg-white/10" href="#cursos">Cursos</a><a onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-white/80 hover:bg-white/10" href="#como-funciona">Como funciona</a><a onClick={() => setMenuOpen(false)} className="block rounded-lg px-3 py-2 text-white/80 hover:bg-white/10" href="#beneficios">Benefícios</a><div className="mt-2 flex gap-3 px-3">{auth.user ? <Link href="/dashboard" className="rounded-lg bg-white px-4 py-2 text-ink">Acessar plataforma</Link> : <><Link href="/login" className="rounded-lg border border-white/20 px-4 py-2">Entrar</Link><Link href="/register" className="asex-gradient rounded-lg px-4 py-2">Criar conta</Link></>}</div></div>}
-                </nav>
-            </header>
-            <main>
-                <section className="relative overflow-hidden"><div className="hero-glow" /><div className="relative mx-auto grid max-w-7xl gap-12 px-5 py-20 lg:grid-cols-[1.15fr_.85fr] lg:py-32"><div><p className="eyebrow text-brand-300">Educação para quem faz a alimentação acontecer</p><h1 className="mt-6 max-w-3xl text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl">Conhecimento que transforma profissionais e negócios da alimentação.</h1><p className="mt-6 max-w-2xl text-lg leading-8 text-white/70">Asex reúne cursos práticos para desenvolver as habilidades que movem restaurantes, bares, cafeterias, padarias e operações de delivery.</p><div className="mt-9 flex flex-wrap gap-4"><Link href={auth.user ? '/courses' : '/register'} className="asex-gradient rounded-lg px-6 py-3 font-bold text-white shadow-lg">Começar a aprender</Link><a href="#cursos" className="rounded-lg border border-white/20 px-6 py-3 font-bold text-white hover:bg-white/10">Conhecer os cursos</a></div></div><div className="self-center rounded-3xl border border-white/10 bg-white/5 p-7 shadow-2xl backdrop-blur"><p className="eyebrow text-brand-300">Sua próxima evolução</p><p className="mt-4 text-3xl font-bold">Do conhecimento à rotina que dá resultado.</p><div className="mt-8 grid grid-cols-2 gap-3 text-sm"><div className="rounded-xl bg-white/10 p-4"><strong className="block text-2xl text-brand-300">100%</strong> no seu ritmo</div><div className="rounded-xl bg-white/10 p-4"><strong className="block text-2xl text-brand-300">Prático</strong> para aplicar</div></div></div></div></section>
-                <section id="beneficios" className="bg-sand py-20 text-ink"><div className="mx-auto max-w-7xl px-5"><p className="eyebrow text-brand-700">Por que aprender com a Asex</p><h2 className="mt-3 max-w-2xl text-4xl font-black tracking-tight">Uma plataforma feita para a realidade do setor.</h2><div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{[['Aprendizado prático', 'Conteúdo que conversa com o dia a dia da operação.'], ['Especialistas do mercado', 'Experiências reais, transformadas em treinamentos claros.'], ['No seu ritmo', 'Estude quando puder e retome de onde parou.'], ['Progresso visível', 'Acompanhe a sua evolução em cada curso.'], ['Conteúdo focado', 'Gestão, atendimento, vendas, operação e muito mais.'], ['Trilhas organizadas', 'Encontre o próximo passo sem perder tempo.']].map(([title, text]) => <article key={title} className="rounded-2xl border border-asex-border bg-white p-6 shadow-sm"><h3 className="text-lg font-bold">{title}</h3><p className="mt-3 leading-6 text-ink/65">{text}</p></article>)}</div></div></section>
-                <section id="cursos" className="bg-white py-20 text-ink"><div className="mx-auto max-w-7xl px-5"><div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow text-brand-700">Cursos em destaque</p><h2 className="mt-3 text-4xl font-black tracking-tight">Treinamentos para aplicar hoje.</h2></div>{auth.user && <Link href="/courses" className="font-bold text-brand-700">Ver catálogo completo →</Link>}</div><div className="mt-12 grid gap-6 md:grid-cols-3">{courses.map((course) => <article key={course.id} className="overflow-hidden rounded-2xl border border-asex-border bg-white shadow-sm"><div className="aspect-[16/9] overflow-hidden"><CourseCover thumbnailPath={course.thumbnailPath} title={course.title} /></div><div className="p-6"><p className="text-sm font-semibold text-brand-700">{course.category || 'Curso'} · {course.lessonCount} aulas</p><h3 className="mt-2 text-xl font-bold">{course.title}</h3><p className="mt-3 line-clamp-2 text-sm leading-6 text-ink/65">{course.description}</p><Link href={auth.user ? `/courses/${course.slug}` : '/login'} className="mt-6 inline-block font-bold text-brand-700">{auth.user ? 'Ver curso →' : 'Entre para assistir →'}</Link></div></article>)}{!courses.length && <p className="rounded-xl bg-sand p-8 text-ink/60">Novos treinamentos serão publicados em breve.</p>}</div></div></section>
-                <section id="como-funciona" className="asex-gradient py-20 text-white"><div className="mx-auto max-w-7xl px-5"><p className="eyebrow text-white/75">Como funciona</p><h2 className="mt-3 text-4xl font-black">Seu desenvolvimento, sem complicação.</h2><div className="mt-10 grid gap-6 md:grid-cols-3">{['Entre ou crie sua conta', 'Receba acesso aos cursos liberados pela Asex', 'Estude e acompanhe seu progresso'].map((item, index) => <div key={item} className="border-t border-white/30 pt-5"><span className="text-sm font-bold">0{index + 1}</span><p className="mt-3 text-xl font-bold">{item}</p></div>)}</div></div></section>
+        <Head title="Asex Educação"><meta content="Acesse seu ambiente ASEX Educação." name="description" /></Head>
+        <div className="portal-shell" onPointerMove={moveBackdrop}>
+            <PortalBackdrop />
+            <header className="portal-header"><BrandLogo className="h-8 w-auto sm:h-9" href="/" /></header>
+            <main className="portal-main portal-reveal">
+                <div className="portal-copy">
+                    <p className="portal-eyebrow">ASEX EDUCAÇÃO</p>
+                    <h1>Seu próximo nível começa aqui.</h1>
+                    <p className="portal-description">Acesse seu ambiente de conhecimento, desenvolvimento e expansão.</p>
+                    <div className="portal-actions"><Link className="portal-primary-action" href={auth.user ? '/dashboard' : '/login'} prefetch>Acessar plataforma<span aria-hidden="true">→</span></Link><Link className="portal-secondary-action" href="/forgot-password">Primeiro acesso?</Link></div>
+                </div>
             </main>
-            <footer className="bg-ink px-5 py-10 text-sm text-white/60"><div className="mx-auto flex max-w-7xl flex-wrap justify-between gap-5"><span>© {new Date().getFullYear()} Asex Educação</span><div className="flex gap-5"><a href="#privacidade">Privacidade</a><a href="#termos">Termos</a><a href="mailto:contato@asexeducacao.com.br">Contato</a></div></div></footer>
+            <footer className="portal-footer"><span>© {new Date().getFullYear()} ASEX Educação</span><nav aria-label="Informações institucionais"><a href="#privacidade">Privacidade</a><a href="mailto:contato@asexeducacao.com.br">Suporte</a></nav></footer>
         </div>
     </>;
 }

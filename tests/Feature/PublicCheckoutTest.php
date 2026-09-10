@@ -99,13 +99,33 @@ class PublicCheckoutTest extends TestCase
         Http::assertNothingSent();
     }
 
-    public function test_inactive_or_expired_links_are_not_available_for_checkout(): void
+    public function test_inactive_or_expired_links_display_the_unavailable_checkout_page(): void
     {
         $inactive = $this->checkoutLink(['active' => false]);
         $expired = $this->checkoutLink(['expires_at' => now()->subMinute()]);
 
-        $this->get("/checkout/{$inactive->token}")->assertNotFound();
+        $this->get("/checkout/{$inactive->token}")
+            ->assertNotFound()
+            ->assertInertia(fn (Assert $page) => $page->component('Checkout/Unavailable'));
+        $this->get("/checkout/{$expired->token}")
+            ->assertNotFound()
+            ->assertInertia(fn (Assert $page) => $page->component('Checkout/Unavailable'));
         $this->post("/checkout/{$expired->token}", $this->buyerData())->assertNotFound();
+
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_public_checkout_validation_errors_are_localized(): void
+    {
+        $link = $this->checkoutLink();
+
+        $this->from("/checkout/{$link->token}")->post("/checkout/{$link->token}", [])
+            ->assertRedirect("/checkout/{$link->token}")
+            ->assertSessionHasErrors([
+                'name' => 'Informe seu nome completo.',
+                'email' => 'Informe seu e-mail.',
+                'phone' => 'Informe seu WhatsApp.',
+            ]);
 
         $this->assertDatabaseCount('orders', 0);
     }
@@ -235,7 +255,7 @@ class PublicCheckoutTest extends TestCase
 
         $this->from("/checkout/{$link->token}")->post("/checkout/{$link->token}", $this->buyerData())
             ->assertRedirect("/checkout/{$link->token}")
-            ->assertSessionHasErrors('checkout');
+            ->assertSessionHasErrors(['checkout' => 'Não foi possível iniciar o pagamento agora. Seus dados foram preservados. Tente novamente.']);
 
         $this->assertDatabaseHas('orders', ['status' => OrderStatus::Failed->value]);
         $this->assertDatabaseCount('enrollments', 0);
@@ -305,6 +325,7 @@ class PublicCheckoutTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Payments/PublicCheckoutReturn')
                 ->where('order.status', 'PENDING')
+                ->where('order.customerName', 'Ana da Silva')
             );
 
         $this->assertNull($order->fresh()->user_id);

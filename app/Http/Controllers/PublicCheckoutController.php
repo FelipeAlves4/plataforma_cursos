@@ -18,13 +18,19 @@ use Symfony\Component\HttpFoundation\Response;
 
 class PublicCheckoutController extends Controller
 {
-    public function show(string $token): InertiaResponse
+    public function show(string $token): InertiaResponse|Response
     {
         $checkoutLink = CheckoutLink::query()
             ->available()
             ->with(['program.courses:id,title,description,estimated_duration_minutes'])
             ->where('token', $token)
-            ->firstOrFail();
+            ->first();
+
+        if ($checkoutLink === null) {
+            return Inertia::render('Checkout/Unavailable')
+                ->toResponse(request())
+                ->setStatusCode(404);
+        }
 
         return Inertia::render('Checkout/Show', [
             'checkout' => [
@@ -116,7 +122,7 @@ class PublicCheckoutController extends Controller
                 'exception' => $exception->getMessage(),
             ]);
 
-            return back()->withErrors(['checkout' => 'Não foi possível iniciar o pagamento. Revise seus dados e tente novamente.']);
+            return back()->withErrors(['checkout' => 'Não foi possível iniciar o pagamento agora. Seus dados foram preservados. Tente novamente.']);
         }
 
         return Inertia::location($order->checkout_url);

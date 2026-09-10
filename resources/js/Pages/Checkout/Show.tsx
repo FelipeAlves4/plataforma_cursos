@@ -1,48 +1,150 @@
 import BrandLogo from '@/Components/BrandLogo';
 import { formatCurrency } from '@/Components/CurrencyInput';
 import { Head, useForm, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 
-type Course = { id: number; title: string; description?: string | null; estimatedDurationMinutes?: number | null };
-type Checkout = { token: string; priceCents: number; program: { name: string; description?: string | null; audience?: string | null; courses: Course[] } };
+type Course = {
+    id: number;
+    title: string;
+    description?: string | null;
+    estimatedDurationMinutes?: number | null;
+};
+
+type Checkout = {
+    token: string;
+    priceCents: number;
+    program: {
+        name: string;
+        description?: string | null;
+        audience?: string | null;
+        courses: Course[];
+    };
+};
+
+function ArrowIcon() {
+    return <svg aria-hidden="true" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 20 20"><path d="M3.5 10h12m-4.5-4.5L15.5 10 11 14.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" /></svg>;
+}
+
+function CheckIcon() {
+    return <svg aria-hidden="true" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 20 20"><path d="m4 10 3.5 3.5L16 5.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>;
+}
+
+function LockIcon() {
+    return <svg aria-hidden="true" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 20 20"><rect height="9" rx="1.5" stroke="currentColor" strokeWidth="1.5" width="12" x="4" y="8" /><path d="M6.75 8V5.75a3.25 3.25 0 0 1 6.5 0V8" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" /></svg>;
+}
+
+function ProgressMark() {
+    return <span aria-hidden="true" className="checkout-progress-mark"><span /><span /><span /></span>;
+}
 
 export default function Show({ checkout }: { checkout: Checkout }) {
     const form = useForm({ name: '', email: '', phone: '' });
     const checkoutError = usePage<{ errors: { checkout?: string } }>().props.errors.checkout;
+    const [isHandingOff, setIsHandingOff] = useState(false);
+    const investment = formatCurrency(checkout.priceCents);
 
-    const submit = (): void => form.post(`/checkout/${checkout.token}`);
+    const submit = (): void => {
+        form.post(`/checkout/${checkout.token}`, {
+            onStart: () => setIsHandingOff(true),
+            onFinish: () => setIsHandingOff(false),
+        });
+    };
 
-    return <main className="min-h-screen bg-[#0C0A0F] text-[#F6F2FA]">
-        <Head title={`Inscrição — ${checkout.program.name}`} />
-        <div className="mx-auto grid min-h-screen max-w-[1440px] lg:grid-cols-[1.1fr_0.9fr]">
-            <section className="border-b border-white/10 px-5 py-7 sm:px-10 sm:py-10 lg:border-b-0 lg:border-r lg:px-14 lg:py-12 xl:px-20">
-                <BrandLogo className="h-9 w-auto" />
-                <div className="mt-12 max-w-2xl sm:mt-16">
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-[#CDA3FF]">Programa online</p>
-                    <h1 className="mt-4 text-4xl font-black leading-[1.02] tracking-[-0.055em] text-white sm:text-5xl xl:text-6xl">{checkout.program.name}</h1>
-                    {checkout.program.description && <p className="mt-6 max-w-xl text-base leading-7 text-white/65 sm:text-lg">{checkout.program.description}</p>}
-                    {checkout.program.audience && <p className="mt-5 inline-flex rounded-full border border-[#B56AF7]/30 bg-[#7B32B6]/15 px-3 py-1.5 text-sm font-semibold text-[#E6CFFF]">Para {checkout.program.audience}</p>}
-                </div>
-                <section aria-labelledby="courses-heading" className="mt-11 max-w-2xl border-t border-white/10 pt-7 sm:mt-14">
-                    <div className="flex items-baseline justify-between gap-4"><h2 className="text-lg font-extrabold text-white" id="courses-heading">Conteúdo incluído</h2><span className="text-sm text-white/45">{checkout.program.courses.length} {checkout.program.courses.length === 1 ? 'curso' : 'cursos'}</span></div>
-                    <ol className="mt-5 space-y-3">{checkout.program.courses.map((course, index) => <li className="flex gap-4 rounded-xl border border-white/[0.08] bg-white/[0.025] p-4" key={course.id}><span aria-hidden className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#9B4DDE]/20 text-xs font-black text-[#EBCFFF]">{String(index + 1).padStart(2, '0')}</span><div><h3 className="font-bold text-white">{course.title}</h3>{course.description && <p className="mt-1 text-sm leading-6 text-white/55">{course.description}</p>}{course.estimatedDurationMinutes && <p className="mt-2 text-xs font-semibold text-white/40">{course.estimatedDurationMinutes} min de conteúdo</p>}</div></li>)}</ol>
+    return (
+        <main className="checkout-shell min-h-[100dvh] overflow-x-hidden bg-[#08060D] text-[#F8F4F0]">
+            <Head title={`Inscrição — ${checkout.program.name}`} />
+            <div className="relative mx-auto grid min-h-[100dvh] max-w-[1440px] lg:grid-cols-[minmax(0,1.16fr)_minmax(25rem,0.84fr)]">
+                <section className="relative px-5 pb-12 pt-7 sm:px-9 sm:pb-16 sm:pt-10 lg:px-14 lg:py-12 xl:px-20">
+                    <BrandLogo className="h-8 w-auto sm:h-9" />
+
+                    <div className="mt-14 max-w-[42rem] sm:mt-20 lg:mt-[clamp(3.5rem,7vh,5rem)]">
+                        <p className="text-[0.68rem] font-bold uppercase tracking-[0.27em] text-[#C9A7FF]">Programa ASEX</p>
+                        <h1 className="mt-5 max-w-[9ch] font-serif text-[clamp(3.2rem,6vw,6.45rem)] leading-[0.88] tracking-[-0.065em] text-[#F8F4F0]">{checkout.program.name}</h1>
+                        {checkout.program.description && <p className="mt-7 max-w-xl text-[1rem] leading-7 text-[#C9C2D9] sm:text-lg sm:leading-8">{checkout.program.description}</p>}
+                        <div className="mt-8 border-l border-[#9347DD]/70 pl-4 lg:hidden">
+                            <p className="text-[0.65rem] font-bold uppercase tracking-[0.23em] text-[#9D93B8]">Investimento</p>
+                            <p className="mt-1 text-3xl font-black tracking-[-0.05em] text-[#F8F4F0]">{investment}</p>
+                        </div>
+                    </div>
+
+                    <section aria-labelledby="courses-heading" className="mt-14 max-w-[42rem] border-t border-white/[0.1] pt-7 sm:mt-16 sm:pt-8">
+                        <h2 className="font-serif text-[clamp(1.9rem,3.2vw,2.7rem)] leading-none tracking-[-0.04em] text-[#F8F4F0]" id="courses-heading">Conteúdo incluído</h2>
+                        <ol className="mt-7 divide-y divide-white/[0.1]">
+                            {checkout.program.courses.map((course, index) => (
+                                <li className="group grid grid-cols-[2.4rem_minmax(0,1fr)] gap-3 py-5 first:pt-0 sm:grid-cols-[3.5rem_minmax(0,1fr)_auto] sm:gap-5" key={course.id}>
+                                    <span aria-hidden="true" className="pt-0.5 text-sm font-semibold tabular-nums text-[#B98AF0]">{String(index + 1).padStart(2, '0')}</span>
+                                    <div>
+                                        <h3 className="font-serif text-lg leading-6 text-[#F8F4F0] transition-colors duration-200 group-hover:text-[#DEC3FF] sm:text-xl">{course.title}</h3>
+                                        {course.description && <p className="mt-1.5 max-w-xl text-sm leading-6 text-[#9D93B8] sm:text-[0.95rem]">{course.description}</p>}
+                                    </div>
+                                    {course.estimatedDurationMinutes && <p className="col-start-2 text-xs font-semibold tabular-nums text-[#837A95] sm:col-auto sm:pt-1.5">{course.estimatedDurationMinutes} min</p>}
+                                </li>
+                            ))}
+                        </ol>
+                    </section>
+
+                    <div className="mt-7 flex max-w-xl items-start gap-3 border-t border-white/[0.1] pt-6 text-sm leading-6 text-[#B7AFC5]">
+                        <span className="mt-1 text-[#C9A7FF]"><CheckIcon /></span>
+                        <p>Acesso liberado após a confirmação segura do pagamento.</p>
+                    </div>
                 </section>
-                <div className="mt-10 flex items-start gap-3 text-sm leading-6 text-white/50"><span aria-hidden className="mt-0.5 text-[#CDA3FF]">✓</span><p>Acesso liberado somente após a confirmação segura do pagamento.</p></div>
-            </section>
-            <section className="flex items-center bg-[#121017] px-5 py-8 sm:px-10 lg:px-14 xl:px-20">
-                <div className="mx-auto w-full max-w-md rounded-2xl border border-white/10 bg-[#19151F] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.34)] sm:p-7">
-                    <p className="text-xs font-black uppercase tracking-[0.18em] text-[#CDA3FF]">Sua inscrição</p>
-                    <div className="mt-5 border-y border-white/10 py-5"><p className="text-sm text-white/55">Investimento à vista</p><p className="mt-1 text-3xl font-black tracking-[-0.04em] text-white">{formatCurrency(checkout.priceCents)}</p></div>
-                    <form className="mt-6 space-y-4" noValidate onSubmit={(event) => { event.preventDefault(); submit(); }}>
-                        <div><label className="text-sm font-bold text-white" htmlFor="name">Nome completo</label><input autoComplete="name" className="mt-2 w-full rounded-lg border border-white/15 bg-[#100D15] px-4 py-3 text-white outline-none placeholder:text-white/30 focus:border-[#C082FF] focus:ring-2 focus:ring-[#A74CE7]/35" id="name" name="name" onChange={(event) => form.setData('name', event.target.value)} placeholder="Como você quer ser chamado" value={form.data.name} />{form.errors.name && <p className="mt-1.5 text-sm text-rose-300" role="alert">{form.errors.name}</p>}</div>
-                        <div><label className="text-sm font-bold text-white" htmlFor="email">E-mail</label><input autoComplete="email" className="mt-2 w-full rounded-lg border border-white/15 bg-[#100D15] px-4 py-3 text-white outline-none placeholder:text-white/30 focus:border-[#C082FF] focus:ring-2 focus:ring-[#A74CE7]/35" id="email" name="email" onChange={(event) => form.setData('email', event.target.value)} placeholder="voce@exemplo.com" type="email" value={form.data.email} />{form.errors.email && <p className="mt-1.5 text-sm text-rose-300" role="alert">{form.errors.email}</p>}</div>
-                        <div><label className="text-sm font-bold text-white" htmlFor="phone">WhatsApp</label><input autoComplete="tel" className="mt-2 w-full rounded-lg border border-white/15 bg-[#100D15] px-4 py-3 text-white outline-none placeholder:text-white/30 focus:border-[#C082FF] focus:ring-2 focus:ring-[#A74CE7]/35" id="phone" inputMode="tel" name="phone" onChange={(event) => form.setData('phone', event.target.value)} placeholder="(11) 99999-9999" type="tel" value={form.data.phone} />{form.errors.phone && <p className="mt-1.5 text-sm text-rose-300" role="alert">{form.errors.phone}</p>}</div>
-                        {checkoutError && <p className="rounded-lg border border-rose-300/30 bg-rose-400/10 px-4 py-3 text-sm leading-6 text-rose-100" role="alert">{checkoutError}</p>}
-                        <button className="mt-2 flex min-h-13 w-full items-center justify-center rounded-lg bg-[#9C48DC] px-5 py-3.5 text-sm font-extrabold text-white transition hover:bg-[#AD5BEC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#19151F] disabled:cursor-wait disabled:opacity-65" disabled={form.processing} type="submit">{form.processing ? 'Preparando pagamento…' : 'Continuar para o pagamento'} <span aria-hidden className="ml-2">→</span></button>
-                    </form>
-                    <p className="mt-5 text-center text-xs leading-5 text-white/45">Pagamento processado em ambiente seguro pela InfinitePay.</p>
-                    <p className="mt-4 text-center text-xs leading-5 text-white/40">Ao continuar, você concorda com a <a className="text-[#D8B3FF] underline underline-offset-2 hover:text-white" href="/#privacidade">Política de Privacidade</a> e os <a className="text-[#D8B3FF] underline underline-offset-2 hover:text-white" href="/#termos">Termos de Uso</a>.</p>
+
+                <section className="relative flex border-t border-white/[0.08] px-5 py-10 sm:px-9 sm:py-14 lg:border-l lg:border-t-0 lg:px-12 xl:px-16">
+                    <div className="my-auto w-full">
+                        <div className="checkout-enrollment-panel mx-auto w-full max-w-[29rem] p-5 sm:p-8">
+                            <p className="text-[0.68rem] font-bold uppercase tracking-[0.25em] text-[#C9A7FF]">Sua inscrição</p>
+                            <p className="mt-3 text-sm leading-6 text-[#9D93B8]">Preencha seus dados para continuar.</p>
+
+                            <div className="mt-7 hidden border-y border-white/[0.1] py-6 lg:block">
+                                <p className="text-[0.65rem] font-bold uppercase tracking-[0.23em] text-[#9D93B8]">Investimento</p>
+                                <p className="mt-2 font-serif text-5xl leading-none tracking-[-0.06em] text-[#F8F4F0]">{investment}</p>
+                            </div>
+
+                            <form className="mt-7 space-y-5" noValidate onSubmit={(event) => { event.preventDefault(); submit(); }}>
+                                <div>
+                                    <label className="text-sm font-semibold text-[#F8F4F0]" htmlFor="name">Nome completo</label>
+                                    <input aria-describedby={form.errors.name ? 'name-error' : undefined} aria-invalid={Boolean(form.errors.name)} autoComplete="name" className="checkout-input mt-2" id="name" name="name" onChange={(event) => { form.clearErrors('name'); form.setData('name', event.target.value); }} placeholder="Digite seu nome completo" required value={form.data.name} />
+                                    {form.errors.name && <p className="checkout-field-error" id="name-error" role="alert">{form.errors.name}</p>}
+                                </div>
+                                <div>
+                                    <label className="text-sm font-semibold text-[#F8F4F0]" htmlFor="email">E-mail</label>
+                                    <input aria-describedby={form.errors.email ? 'email-error' : undefined} aria-invalid={Boolean(form.errors.email)} autoComplete="email" className="checkout-input mt-2" id="email" name="email" onChange={(event) => { form.clearErrors('email'); form.setData('email', event.target.value); }} placeholder="voce@exemplo.com" required type="email" value={form.data.email} />
+                                    {form.errors.email && <p className="checkout-field-error" id="email-error" role="alert">{form.errors.email}</p>}
+                                </div>
+                                <div>
+                                    <label className="text-sm font-semibold text-[#F8F4F0]" htmlFor="phone">WhatsApp</label>
+                                    <input aria-describedby={form.errors.phone ? 'phone-error' : undefined} aria-invalid={Boolean(form.errors.phone)} autoComplete="tel" className="checkout-input mt-2" id="phone" inputMode="tel" name="phone" onChange={(event) => { form.clearErrors('phone'); form.setData('phone', event.target.value); }} placeholder="(11) 99999-9999" required type="tel" value={form.data.phone} />
+                                    {form.errors.phone && <p className="checkout-field-error" id="phone-error" role="alert">{form.errors.phone}</p>}
+                                </div>
+
+                                {checkoutError && <div aria-live="assertive" className="checkout-request-error" role="alert"><p>Não foi possível iniciar o pagamento agora.</p><span>Seus dados foram preservados. Tente novamente.</span></div>}
+
+                                <button className="checkout-primary-button" disabled={form.processing} type="submit">
+                                    <span>{form.processing ? 'Preparando pagamento…' : 'Continuar para o pagamento'}</span>
+                                    <ArrowIcon />
+                                </button>
+                            </form>
+
+                            <div className="mt-6 border-t border-white/[0.1] pt-5">
+                                <p className="flex items-center justify-center gap-2 text-center text-xs leading-5 text-[#B7AFC5]"><LockIcon />Pagamento processado em ambiente seguro pela InfinitePay.</p>
+                                <p className="mt-4 text-center text-xs leading-5 text-[#837A95]">Ao continuar, você concorda com a <a className="checkout-legal-link" href="/#privacidade">Política de Privacidade</a> e os <a className="checkout-legal-link" href="/#termos">Termos de Uso</a>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            {isHandingOff && <div aria-live="polite" aria-modal="true" className="checkout-handoff" role="dialog">
+                <div className="checkout-handoff-panel">
+                    <BrandLogo className="h-8 w-auto" />
+                    <div className="mt-12 grid h-11 w-11 place-items-center rounded-full border border-[#B98AF0]/35 bg-[#6429AA]/15 text-[#E4D2FF]"><CheckIcon /></div>
+                    <p className="mt-5 text-sm font-semibold text-[#F8F4F0]">Dados confirmados</p>
+                    <h2 className="mt-3 font-serif text-3xl leading-none tracking-[-0.05em] text-[#F8F4F0]">Preparando seu pagamento seguro…</h2>
+                    <p className="mt-4 max-w-sm text-sm leading-6 text-[#B7AFC5]">Conectando você ao ambiente de pagamento da InfinitePay.</p>
+                    <div className="mt-8"><ProgressMark /></div>
+                    <p className="mt-7 flex items-center gap-2 text-xs text-[#9D93B8]"><LockIcon />Pagamento processado com segurança pela InfinitePay</p>
                 </div>
-            </section>
-        </div>
-    </main>;
+            </div>}
+        </main>
+    );
 }

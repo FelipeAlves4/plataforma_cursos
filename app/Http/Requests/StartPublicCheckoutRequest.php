@@ -29,6 +29,22 @@ class StartPublicCheckoutRequest extends FormRequest
         ];
     }
 
+    /**
+     * Get the custom validation messages for the request.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Informe seu nome completo.',
+            'email.required' => 'Informe seu e-mail.',
+            'email.email' => 'Informe um e-mail válido.',
+            'phone.required' => 'Informe seu WhatsApp.',
+            'phone.regex' => 'Informe um WhatsApp válido.',
+        ];
+    }
+
     protected function prepareForValidation(): void
     {
         $this->merge([

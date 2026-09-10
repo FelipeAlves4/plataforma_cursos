@@ -22,7 +22,7 @@ class PaymentReturnController extends Controller
             'slug' => ['nullable', 'string', 'max:255'],
             'receipt_url' => ['nullable', 'url', 'max:2048'],
         ]);
-        $order = Order::query()->where('order_nsu', $data['order_nsu'])->firstOrFail();
+        $order = Order::query()->with('checkoutLead')->where('order_nsu', $data['order_nsu'])->firstOrFail();
 
         if (! $order->isPublicCheckout()) {
             abort_unless($request->user()?->id === $order->user_id, 404);
@@ -46,6 +46,7 @@ class PaymentReturnController extends Controller
                 'order' => [
                     ...$this->orderData($order),
                     'accessUrl' => $this->activationUrl($order),
+                    'customerName' => $order->checkoutLead?->name,
                     'loginUrl' => route('login'),
                 ],
             ]);
