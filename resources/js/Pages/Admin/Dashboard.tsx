@@ -1,44 +1,84 @@
+import AttentionTable from '@/Components/AdminDashboard/AttentionTable';
+import CoursePerformanceTable from '@/Components/AdminDashboard/CoursePerformanceTable';
+import DashboardLoading from '@/Components/AdminDashboard/DashboardLoading';
+import DropoffPoints from '@/Components/AdminDashboard/DropoffPoints';
+import MetricCard from '@/Components/AdminDashboard/MetricCard';
+import RecentActivity from '@/Components/AdminDashboard/RecentActivity';
+import StudentEngagement from '@/Components/AdminDashboard/StudentEngagement';
+import TrendChart from '@/Components/AdminDashboard/TrendChart';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head, Link } from '@inertiajs/react';
+import { DashboardData, Period } from '@/types/admin-dashboard';
+import { Head, Link, router } from '@inertiajs/react';
+import { ChangeEvent, ReactNode, useState } from 'react';
 
-type Props = {
-    metrics: { students: number; courses: number; publishedCourses: number; draftCourses: number; lessons: number; enrollments: number };
-    recentCourses: { id: number; title: string; status: 'DRAFT' | 'PUBLISHED'; lessonsCount: number; enrollmentsCount: number }[];
-    recentEnrollments: { id: number; enrolledAt: string | null; course: { id: number; title: string }; student: { name: string; email: string } }[];
-};
+type Props = { dashboard: DashboardData };
 
-function Status({ status }: { status: 'DRAFT' | 'PUBLISHED' }) {
-    return <span className={status === 'PUBLISHED' ? 'admin-status admin-status-published' : 'admin-status admin-status-draft'}>{status === 'PUBLISHED' ? 'Publicado' : 'Rascunho'}</span>;
+const periods: { value: Period; label: string }[] = [
+    { value: '7d', label: 'Últimos 7 dias' },
+    { value: '30d', label: 'Últimos 30 dias' },
+    { value: '90d', label: 'Últimos 90 dias' },
+    { value: 'year', label: 'Este ano' },
+    { value: 'all', label: 'Todo o período' },
+];
+
+function Icon({ children }: { children: ReactNode }) {
+    return <svg fill="none" height="20" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="20">{children}</svg>;
 }
 
-export default function Dashboard({ metrics, recentCourses, recentEnrollments }: Props) {
-    const cards = [
-        { label: 'Alunos', value: metrics.students, detail: 'Contas de estudantes' },
-        { label: 'Cursos', value: metrics.courses, detail: 'No catálogo administrativo' },
-        { label: 'Publicados', value: metrics.publishedCourses, detail: 'Disponíveis aos matriculados' },
-        { label: 'Rascunhos', value: metrics.draftCourses, detail: 'Em preparação' },
-        { label: 'Aulas', value: metrics.lessons, detail: 'Conteúdos cadastrados' },
-        { label: 'Matrículas', value: metrics.enrollments, detail: 'Vínculos ativos' },
-    ];
+const formatCurrency = (amountCents: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amountCents / 100);
+const formatNumber = (value: number) => value.toLocaleString('pt-BR');
+
+export default function Dashboard({ dashboard }: Props) {
+    const [isLoading, setIsLoading] = useState(false);
+    const [requestError, setRequestError] = useState<string | null>(null);
+
+    const changePeriod = (event: ChangeEvent<HTMLSelectElement>) => {
+        setRequestError(null);
+        router.get('/admin', { period: event.target.value }, {
+            preserveScroll: true,
+            preserveState: false,
+            replace: true,
+            onStart: () => setIsLoading(true),
+            onError: () => setRequestError('Não foi possível atualizar os indicadores. Tente novamente.'),
+            onFinish: () => setIsLoading(false),
+        });
+    };
 
     return <AdminLayout>
-        <Head title="Administração" />
+        <Head title="Dashboard administrativo" />
         <section className="admin-page-header">
-            <div><p className="admin-eyebrow">Administração</p><h1>Visão geral</h1><p>Tenha uma leitura objetiva do catálogo, conteúdo e matrículas.</p></div>
-            <Link className="admin-primary-button" href="/admin/courses/create">Novo curso</Link>
+            <div><p className="admin-eyebrow">ASEX Educação · Administração</p><h1>Dashboard</h1><p>Visão geral da operação da ASEX Educação</p></div>
+            <div className="flex flex-wrap items-center gap-3">
+                <label className="admin-period-select"><span>Período</span><select aria-label="Filtrar período do dashboard" value={dashboard.period} onChange={changePeriod}>{periods.map((period) => <option key={period.value} value={period.value}>{period.label}</option>)}</select></label>
+                <Link className="admin-primary-button" href="/admin/courses/create">Novo curso</Link>
+            </div>
         </section>
-        <section aria-label="Indicadores da plataforma" className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {cards.map((card) => <article className="admin-metric-card" key={card.label}><p>{card.label}</p><strong>{card.value}</strong><span>{card.detail}</span></article>)}
+
+        {requestError && <div className="admin-dashboard-error" role="alert"><span>{requestError}</span><button type="button" onClick={() => router.reload()}>Tentar novamente</button></div>}
+        {isLoading ? <DashboardLoading /> : <>
+        <section aria-label="Indicadores principais" className="mt-8 grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
+            <MetricCard change={dashboard.summary.students.change} detail={`+${formatNumber(dashboard.summary.students.new)} no período`} icon={<Icon><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6m3-3h-6" /></Icon>} label="Alunos" value={formatNumber(dashboard.summary.students.total)} />
+            <MetricCard change={dashboard.summary.activeStudents.change} detail={`${dashboard.summary.activeStudents.percentage.toLocaleString('pt-BR')}% da base ativa`} icon={<Icon><path d="M20 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></Icon>} label="Alunos ativos" value={formatNumber(dashboard.summary.activeStudents.total)} />
+            <MetricCard change={dashboard.summary.revenue.change} detail={`${formatNumber(dashboard.summary.revenue.sales)} vendas confirmadas`} icon={<Icon><path d="M4 4h16v4H4z" /><path d="M6 8v12h12V8M9 13h6" /></Icon>} label="Faturamento" value={formatCurrency(dashboard.summary.revenue.amountCents)} />
+            <MetricCard change={dashboard.summary.completionRate.change} detail="Média em matrículas com aulas" icon={<Icon><circle cx="12" cy="12" r="9" /><path d="m9 12 2 2 4-5" /></Icon>} isPercentageChange={false} label="Taxa média de conclusão" value={`${dashboard.summary.completionRate.percentage.toLocaleString('pt-BR')}%`} />
         </section>
-        <section className="mt-8 grid gap-6 2xl:grid-cols-[minmax(0,1.15fr)_minmax(22rem,.85fr)]">
-            <article className="admin-panel overflow-hidden">
-                <div className="admin-panel-heading"><div><h2>Cursos recentes</h2><p>Últimos cursos atualizados.</p></div><Link className="admin-text-link" href="/admin/courses">Ver cursos</Link></div>
-                {recentCourses.length ? <div className="overflow-x-auto"><table className="admin-table min-w-[650px]"><thead><tr><th>Curso</th><th>Status</th><th>Aulas</th><th>Matrículas</th></tr></thead><tbody>{recentCourses.map((course) => <tr key={course.id}><td><Link className="admin-table-link" href={`/admin/courses/${course.id}/edit`}>{course.title}</Link></td><td><Status status={course.status} /></td><td>{course.lessonsCount}</td><td><Link className="admin-text-link" href={`/admin/courses/${course.id}/students`}>{course.enrollmentsCount}</Link></td></tr>)}</tbody></table></div> : <div className="admin-empty-state"><p>Nenhum curso cadastrado ainda.</p><Link className="admin-text-link" href="/admin/courses/create">Criar o primeiro curso</Link></div>}
-            </article>
-            <article className="admin-panel overflow-hidden">
-                <div className="admin-panel-heading"><div><h2>Matrículas recentes</h2><p>Atividade real da plataforma.</p></div></div>
-                {recentEnrollments.length ? <div className="divide-y divide-white/10">{recentEnrollments.map((enrollment) => <Link className="admin-activity" href={`/admin/courses/${enrollment.course.id}/students`} key={enrollment.id}><span className="admin-avatar">{enrollment.student.name.slice(0, 1).toUpperCase()}</span><span className="min-w-0"><strong>{enrollment.student.name}</strong><small>{enrollment.course.title}</small><small>{enrollment.student.email}{enrollment.enrolledAt ? ` · ${new Date(enrollment.enrolledAt).toLocaleDateString('pt-BR')}` : ''}</small></span></Link>)}</div> : <div className="admin-empty-state"><p>Nenhuma matrícula registrada ainda.</p></div>}
-            </article>
+
+        <section className="mt-6 grid gap-6 2xl:grid-cols-2">
+            <TrendChart data={dashboard.studentsGrowth} description="Entradas de novos alunos no período selecionado." formatValue={formatNumber} title="Novos alunos" />
+            <TrendChart color="emerald" data={dashboard.revenueGrowth} description="Somente pagamentos confirmados via checkout." formatValue={formatCurrency} title="Faturamento" />
         </section>
+
+        <section className="mt-6"><CoursePerformanceTable courses={dashboard.coursePerformance} /></section>
+
+        <section className="mt-6 grid gap-6 2xl:grid-cols-[minmax(0,1.15fr)_minmax(22rem,.85fr)]">
+            <StudentEngagement engagement={dashboard.engagement} />
+            <DropoffPoints points={dashboard.dropoffPoints} />
+        </section>
+
+        <section className="mt-6 grid gap-6 2xl:grid-cols-[minmax(0,1.15fr)_minmax(22rem,.85fr)]">
+            <AttentionTable students={dashboard.atRiskStudents} />
+            <RecentActivity activity={dashboard.recentActivity} />
+        </section>
+        </>}
     </AdminLayout>;
 }

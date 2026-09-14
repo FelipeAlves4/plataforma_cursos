@@ -131,6 +131,54 @@
     .admin-shell .admin-activity strong { @apply block truncate text-sm font-bold text-[#F8F7FB]; }
     .admin-shell .admin-activity small { @apply mt-0.5 block truncate text-xs text-[#9D93B8]; }
     .admin-shell .admin-avatar { @apply grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#221C31] text-sm font-black text-[#D8B4FE]; }
+    .admin-shell .admin-period-select { @apply flex items-center gap-2 rounded-xl border border-white/10 bg-[#14101F] px-3 py-2 text-sm font-bold text-[#C9C2D9]; }
+    .admin-shell .admin-period-select > span { @apply sr-only; }
+    .admin-shell .admin-period-select select { @apply min-h-0 border-0 bg-transparent py-0 pl-0 pr-7 text-sm font-bold focus:ring-0; }
+    .admin-shell .admin-dashboard-metric { @apply relative overflow-hidden rounded-2xl border border-white/10 bg-[#14101F] p-5 shadow-[0_14px_36px_rgba(0,0,0,.12)]; }
+    .admin-shell .admin-dashboard-metric::after { position: absolute; top: 0; right: 0; width: 7rem; height: 7rem; border-radius: 999px; background: rgba(147,71,221,.1); content: ''; filter: blur(20px); transform: translate(36%,-42%); }
+    .admin-shell .admin-dashboard-metric p { @apply text-sm font-semibold text-[#C9C2D9]; }
+    .admin-shell .admin-dashboard-metric strong { @apply mt-5 block text-3xl font-black tracking-tight text-[#F8F7FB] sm:text-[2rem]; }
+    .admin-shell .admin-dashboard-metric-icon { @apply grid h-10 w-10 place-items-center rounded-xl bg-[#6429AA]/15 text-[#D8B4FE]; }
+    .admin-shell .admin-dashboard-metric-detail { @apply mt-2 block text-sm text-[#9D93B8]; }
+    .admin-shell .admin-dashboard-change-positive, .admin-shell .admin-dashboard-change-negative, .admin-shell .admin-dashboard-change-neutral { @apply mt-4 block text-xs font-bold; }
+    .admin-shell .admin-dashboard-change-positive { @apply text-emerald-300; }
+    .admin-shell .admin-dashboard-change-negative { @apply text-rose-300; }
+    .admin-shell .admin-dashboard-change-neutral { @apply text-[#7D7398]; }
+    .admin-shell .admin-chart-reading { @apply shrink-0 text-right; }
+    .admin-shell .admin-chart-reading span { @apply block text-xs text-[#7D7398]; }
+    .admin-shell .admin-chart-reading strong { @apply mt-1 block text-sm font-black text-[#F8F7FB]; }
+    .admin-shell .admin-percent-value { @apply font-bold text-emerald-300; }
+    .admin-shell .admin-progress-inline { @apply inline-flex min-w-28 items-center gap-2 text-xs font-bold text-[#C9C2D9]; }
+    .admin-shell .admin-progress-inline i { @apply h-1.5 rounded-full bg-[#C084FC]; }
+    .admin-shell .admin-engagement-grid { @apply grid divide-y divide-white/10 sm:grid-cols-2 sm:divide-x sm:divide-y-0; }
+    .admin-shell .admin-engagement-item { @apply min-w-0 p-5; }
+    .admin-shell .admin-engagement-item:nth-child(n+3) { @apply border-t border-white/10; }
+    .admin-shell .admin-engagement-item dt { @apply text-sm font-bold text-[#C9C2D9]; }
+    .admin-shell .admin-engagement-item dd { @apply mt-2 text-3xl font-black tracking-tight text-[#F8F7FB]; }
+    .admin-shell .admin-engagement-item small { @apply mt-2 block text-xs leading-5 text-[#7D7398]; }
+    .admin-shell .admin-engagement-emerald dd { @apply text-emerald-300; }
+    .admin-shell .admin-engagement-amber dd { @apply text-amber-200; }
+    .admin-shell .admin-engagement-rose dd { @apply text-rose-300; }
+    .admin-shell .admin-attention-status { @apply inline-flex rounded-full px-2.5 py-1 text-xs font-bold; }
+    .admin-shell .admin-attention-risk { @apply bg-rose-400/10 text-rose-300; }
+    .admin-shell .admin-attention-low { @apply bg-amber-300/10 text-amber-200; }
+    .admin-shell .admin-attention-neutral { @apply bg-white/5 text-[#C9C2D9]; }
+    .admin-shell .admin-dropoff-row { @apply flex items-center gap-3 px-5 py-4; }
+    .admin-shell .admin-dropoff-rank { @apply grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#6429AA]/15 text-sm font-black text-[#D8B4FE]; }
+    .admin-shell .admin-dropoff-row strong { @apply block truncate text-sm font-bold text-[#F8F7FB]; }
+    .admin-shell .admin-dropoff-row small { @apply mt-1 block text-xs text-[#7D7398]; }
+    .admin-shell .admin-dropoff-rate { @apply text-right text-lg font-black text-rose-300; }
+    .admin-shell .admin-dropoff-rate small { @apply mt-0 text-[10px] font-bold uppercase tracking-wide text-[#9D93B8]; }
+    .admin-shell .admin-recent-activity { @apply flex items-center gap-3 px-5 py-4; }
+    .admin-shell .admin-recent-activity strong { @apply block text-sm font-bold leading-5 text-[#F8F7FB]; }
+    .admin-shell .admin-recent-activity small { @apply mt-1 block text-xs text-[#7D7398]; }
+    .admin-shell .admin-recent-icon { @apply grid h-9 w-9 shrink-0 place-items-center rounded-xl text-xs font-black; }
+    .admin-shell .admin-recent-enrollment, .admin-shell .admin-recent-student { @apply bg-[#6429AA]/15 text-[#D8B4FE]; }
+    .admin-shell .admin-recent-started { @apply bg-sky-400/10 text-sky-300; }
+    .admin-shell .admin-recent-completion { @apply bg-emerald-400/10 text-emerald-300; }
+    .admin-shell .admin-recent-sale { @apply bg-amber-300/10 text-amber-200; }
+    .admin-shell .admin-dashboard-error { @apply mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm font-semibold text-rose-100; }
+    .admin-shell .admin-dashboard-error button { @apply rounded-lg bg-rose-300/15 px-3 py-1.5 text-xs font-black text-rose-100 transition hover:bg-rose-300/25; }
 
     .admin-shell input, .admin-shell select, .admin-shell textarea { @apply border-white/10 bg-[#100C18] text-[#F8F7FB] placeholder:text-[#7D7398] focus:border-[#9347DD] focus:ring-[#9347DD]; }
     .admin-shell .bg-white { background-color: #14101F; }
