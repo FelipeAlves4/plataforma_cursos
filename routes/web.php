@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\OfferController as AdminOfferController;
 use App\Http\Controllers\Admin\ProgramController as AdminProgramController;
 use App\Http\Controllers\Admin\SaleController as AdminSaleController;
 use App\Http\Controllers\Admin\StudentController as AdminStudentController;
+use App\Http\Controllers\Admin\StudentDirectoryController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
@@ -69,6 +70,8 @@ Route::prefix('admin')
     ->group(function (): void {
         Route::get('/', AdminDashboardController::class)->name('dashboard');
         Route::resource('courses', AdminCourseController::class)->except('show');
+        Route::get('students', [StudentDirectoryController::class, 'index'])->name('students.index');
+        Route::get('students/{student}', [StudentDirectoryController::class, 'show'])->name('students.show');
         Route::resource('programs', AdminProgramController::class)->except(['show', 'destroy']);
         Route::get('checkout-links', [AdminCheckoutLinkController::class, 'index'])->name('checkout-links.index');
         Route::post('checkout-links', [AdminCheckoutLinkController::class, 'store'])->name('checkout-links.store');

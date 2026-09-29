@@ -85,16 +85,20 @@ class AdminDashboardMetricsService
             'engagement' => [
                 'active' => $activeStudents,
                 'inactive' => max(0, $studentTotal - $activeStudents),
-                'notStarted' => (clone $studentCourseProgress)
+                'notStarted' => DB::query()
+                    ->fromSub(clone $studentCourseProgress, 'student_course_progress')
                     ->where('lesson_count', '>', 0)
                     ->whereNull('started_at')
-                    ->count(),
-                'atRisk' => (clone $studentCourseProgress)
+                    ->distinct()
+                    ->count('user_id'),
+                'atRisk' => DB::query()
+                    ->fromSub(clone $studentCourseProgress, 'student_course_progress')
                     ->where('lesson_count', '>', 0)
                     ->whereNotNull('started_at')
                     ->whereColumn('completed_lessons', '<', 'lesson_count')
                     ->where('last_activity_at', '<=', now()->subDays(self::ACTIVE_DAYS))
-                    ->count(),
+                    ->distinct()
+                    ->count('user_id'),
             ],
             'atRiskStudents' => $this->atRiskStudents($studentCourseProgress),
             'dropoffPoints' => $this->dropoffPoints(),

@@ -117,6 +117,49 @@ class AdminDashboardTest extends TestCase
             );
     }
 
+    public function test_engagement_not_started_counts_unique_students_instead_of_enrollments_or_lessons(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+        $student = User::factory()->create(['role' => UserRole::Student]);
+
+        foreach (['curso-um', 'curso-dois'] as $index => $slug) {
+            $course = Course::query()->create([
+                'title' => 'Curso '.($index + 1),
+                'slug' => $slug,
+                'status' => CourseStatus::Published,
+            ]);
+            $module = CourseModule::query()->create([
+                'course_id' => $course->id,
+                'title' => 'Módulo',
+                'position' => 1,
+            ]);
+
+            for ($position = 1; $position <= 3; $position++) {
+                Lesson::query()->create([
+                    'module_id' => $module->id,
+                    'title' => "Aula {$position}",
+                    'video_provider' => VideoProvider::YouTube,
+                    'video_id' => 'dQw4w9WgXcQ',
+                    'position' => $position,
+                ]);
+            }
+
+            Enrollment::query()->create([
+                'user_id' => $student->id,
+                'course_id' => $course->id,
+                'enrolled_at' => now(),
+            ]);
+        }
+
+        $this->actingAs($admin)
+            ->get('/admin')
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('dashboard.engagement.notStarted', 1)
+                ->where('dashboard.engagement.active', 0)
+                ->where('dashboard.engagement.inactive', 1)
+            );
+    }
+
     public function test_students_are_forbidden_from_viewing_the_administrative_dashboard(): void
     {
         $this->actingAs(User::factory()->create(['role' => UserRole::Student]))
