@@ -50,7 +50,7 @@ export default function Dashboard({ dashboard }: Props) {
             <div><p className="admin-eyebrow">ASEX Educação · Administração</p><h1>Dashboard</h1><p>Visão geral da operação da ASEX Educação</p></div>
             <div className="flex flex-wrap items-center gap-3">
                 <label className="admin-period-select"><span>Período</span><select aria-label="Filtrar período do dashboard" value={dashboard.period} onChange={changePeriod}>{periods.map((period) => <option key={period.value} value={period.value}>{period.label}</option>)}</select></label>
-                <Link className="admin-primary-button" href="/admin/courses/create">Novo curso</Link>
+                <Link className="admin-secondary-button" href="/admin/students">Ver alunos</Link><Link className="admin-primary-button" href="/admin/courses/create">Novo curso</Link>
             </div>
         </section>
 
