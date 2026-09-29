@@ -4,16 +4,146 @@ import ProgressBar from '@/Components/ProgressBar';
 import StudentLayout from '@/Layouts/StudentLayout';
 import { Head, Link } from '@inertiajs/react';
 
-type Lesson = { id: number; title: string; durationSeconds?: number | null; videoId?: string | null; isPreview: boolean; completed: boolean; };
-type Props = { course: { title: string; slug: string; description?: string | null; thumbnailPath?: string | null; progress: number; nextLessonId?: number | null; instructor?: string | null; category?: string | null; level?: string | null; lessonCount: number; moduleCount: number; certificate: { enabled: boolean; eligible: boolean; downloadUrl?: string | null; issueUrl: string }; modules: Array<{ id: number; title: string; position: number; completedLessons: number; lessons: Lesson[]; }>; }; };
+type Lesson = {
+    id: number;
+    title: string;
+    durationSeconds?: number | null;
+    videoId?: string | null;
+    isPreview: boolean;
+    completed: boolean;
+};
+
+type Props = {
+    course: {
+        title: string;
+        slug: string;
+        description?: string | null;
+        thumbnailPath?: string | null;
+        progress: number;
+        nextLessonId?: number | null;
+        instructor?: string | null;
+        category?: string | null;
+        level?: string | null;
+        lessonCount: number;
+        moduleCount: number;
+        certificate: { enabled: boolean; eligible: boolean; downloadUrl?: string | null; issueUrl: string };
+        modules: Array<{ id: number; title: string; position: number; completedLessons: number; lessons: Lesson[] }>;
+    };
+};
 
 export default function Show({ course }: Props) {
-    const durationMinutes = Math.ceil(course.modules.flatMap((module) => module.lessons).reduce((seconds, lesson) => seconds + (lesson.durationSeconds ?? 0), 0) / 60);
-    const metadata = [course.instructor && `Com ${course.instructor}`, course.category, course.level, `${course.lessonCount} aulas`, durationMinutes > 0 && `${durationMinutes} min`].filter((item): item is string => typeof item === 'string');
+    const durationMinutes = Math.ceil(
+        course.modules.flatMap((module) => module.lessons).reduce((seconds, lesson) => seconds + (lesson.durationSeconds ?? 0), 0) / 60,
+    );
 
-    return <StudentLayout><Head title={course.title} />
-        <section className="relative isolate min-h-[480px] overflow-hidden rounded-[1.35rem] border border-white/[0.1] bg-[#131018] px-6 py-10 shadow-[0_28px_80px_rgba(0,0,0,.3)] sm:px-10 sm:py-14 lg:flex lg:items-end lg:px-14 lg:py-16"><div className="absolute inset-0 overflow-hidden"><CourseCover className="h-full w-full opacity-75" thumbnailPath={course.thumbnailPath} title={course.title} /><div aria-hidden className="absolute inset-0 bg-[linear-gradient(90deg,#100d15_0%,rgba(16,13,21,.96)_38%,rgba(16,13,21,.48)_68%,rgba(16,13,21,.18)_100%)]" /></div><div className="relative z-10 max-w-2xl"><p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#d3a5ff]">Curso</p><h1 className="mt-4 text-4xl font-black leading-[.98] tracking-[-0.06em] text-white sm:text-6xl">{course.title}</h1>{course.description && <p className="mt-5 max-w-xl text-base leading-7 text-white/75 sm:text-lg">{course.description}</p>}<div className="mt-7 flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold text-white/65">{metadata.map((item) => <span key={item}>{item}</span>)}</div><div className="mt-8 max-w-sm"><ProgressBar label="Seu progresso" tone="dark" value={course.progress} /></div>{course.progress === 100 && course.certificate.enabled && <div className="mt-6 rounded-xl border border-[#9347dd]/35 bg-[#2b0870]/55 p-5 backdrop-blur"><p className="font-black text-white">Curso concluído</p><p className="mt-1 text-sm leading-6 text-white/65">Seu certificado está pronto após a conclusão de todas as aulas.</p>{course.certificate.downloadUrl ? <a className="mt-4 inline-flex min-h-11 items-center rounded-lg border border-white/20 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" href={course.certificate.downloadUrl}>Baixar certificado</a> : course.certificate.eligible ? <Link as="button" className="asex-gradient mt-4 inline-flex min-h-11 items-center rounded-lg px-4 py-2 text-sm font-bold text-white transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" href={course.certificate.issueUrl} method="post">Emitir certificado</Link> : null}</div>}{course.nextLessonId && <Link className="asex-gradient mt-8 inline-flex min-h-12 items-center rounded-lg px-6 py-3 text-sm font-bold text-white transition hover:brightness-110" href={`/lessons/${course.nextLessonId}`}>{course.progress === 100 ? 'Revisar curso' : course.progress > 0 ? 'Continuar curso' : 'Começar curso'} <span aria-hidden className="ml-2">→</span></Link>}</div>
-        </section>
-        <section className="mt-14 sm:mt-20"><div className="max-w-2xl"><p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#c28aff]">Conteúdo do curso</p><h2 className="mt-3 text-3xl font-black tracking-[-0.04em] text-white sm:text-4xl">Seu caminho de aprendizagem</h2><p className="mt-3 text-sm leading-6 text-white/60 sm:text-base">Avance aula a aula e acompanhe o seu progresso em cada módulo.</p></div><div className="mt-8 space-y-5">{course.modules.length ? course.modules.map((module) => <section className="overflow-hidden rounded-[1.15rem] border border-white/[0.1] bg-[#131018] shadow-[0_14px_36px_rgba(0,0,0,.15)]" key={module.id}><div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] px-5 py-5 sm:px-7"><div><p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#c28aff]">Módulo {String(module.position).padStart(2, '0')}</p><h3 className="mt-2 text-xl font-black text-white">{module.title}</h3></div><p className="text-sm font-semibold text-white/55">{module.completedLessons} de {module.lessons.length} aulas</p></div><div className="divide-y divide-white/[0.06]">{module.lessons.map((lesson, index) => <LessonRow completed={lesson.completed} current={lesson.id === course.nextLessonId} durationSeconds={lesson.durationSeconds} id={lesson.id} key={lesson.id} number={index + 1} title={lesson.title} videoId={lesson.videoId} />)}</div></section>) : <div className="rounded-[1.15rem] border border-dashed border-white/15 px-6 py-14 text-center text-sm text-white/55">Este curso ainda não possui aulas disponíveis.</div>}</div></section>
-    </StudentLayout>;
+    const metadata = [
+        course.instructor && `Com ${course.instructor}`,
+        course.category,
+        course.level,
+        `${course.lessonCount} aulas`,
+        durationMinutes > 0 && `${durationMinutes} min`,
+    ].filter((item): item is string => typeof item === 'string');
+
+    const actionLabel = course.progress === 100 ? 'Revisar curso' : course.progress > 0 ? 'Continuar assistindo' : 'Assistir agora';
+
+    return (
+        <StudentLayout>
+            <Head title={course.title} />
+
+            <section className="-mx-5 -mt-24 sm:-mx-8 sm:-mt-28 lg:-mx-12 xl:-mx-16">
+                <div className="relative isolate min-h-[610px] overflow-hidden sm:min-h-[680px] lg:min-h-[730px]">
+                    <div className="absolute inset-0">
+                        <CourseCover className="h-full w-full scale-[1.01]" thumbnailPath={course.thumbnailPath} title={course.title} />
+                        <div aria-hidden className="absolute inset-0 bg-[linear-gradient(90deg,#08070d_0%,rgba(8,7,13,.96)_30%,rgba(8,7,13,.68)_52%,rgba(8,7,13,.18)_76%,rgba(8,7,13,.05)_100%)]" />
+                        <div aria-hidden className="absolute inset-x-0 bottom-0 h-[55%] bg-[linear-gradient(180deg,transparent_0%,rgba(8,7,13,.46)_38%,#08070d_100%)]" />
+                    </div>
+
+                    <div className="relative z-10 flex min-h-[610px] items-end px-5 pb-28 pt-32 sm:min-h-[680px] sm:px-8 sm:pb-32 lg:min-h-[730px] lg:px-12 lg:pb-36 xl:px-16">
+                        <div className="max-w-2xl">
+                            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#c28aff]">{course.category || 'Curso ASEX'}</p>
+                            <h1 className="mt-4 max-w-[12ch] text-4xl font-black leading-[.96] tracking-[-0.06em] text-white sm:text-6xl lg:text-7xl">{course.title}</h1>
+
+                            {course.description && <p className="mt-5 max-w-xl text-base leading-7 text-white/72 sm:text-lg">{course.description}</p>}
+
+                            <div className="mt-5 flex flex-wrap gap-x-3 gap-y-2 text-sm font-semibold text-white/52">
+                                {metadata.map((item, index) => (
+                                    <span className="inline-flex items-center" key={item}>
+                                        {index > 0 && <span aria-hidden className="mr-3 text-white/22">•</span>}
+                                        {item}
+                                    </span>
+                                ))}
+                            </div>
+
+                            <div className="mt-7 max-w-sm">
+                                <ProgressBar label="Seu progresso" tone="dark" value={course.progress} />
+                            </div>
+
+                            <div className="mt-7 flex flex-wrap gap-3">
+                                {course.nextLessonId && (
+                                    <Link className="inline-flex min-h-12 items-center rounded-lg bg-white px-6 py-3 text-sm font-black text-[#0b0910] transition hover:bg-white/90" href={`/lessons/${course.nextLessonId}`}>
+                                        <span aria-hidden className="mr-2">▶</span>
+                                        {actionLabel}
+                                    </Link>
+                                )}
+                                <Link className="inline-flex min-h-12 items-center rounded-lg bg-white/[0.12] px-6 py-3 text-sm font-bold text-white backdrop-blur transition hover:bg-white/[0.19]" href="/my-courses">
+                                    <span aria-hidden className="mr-2 text-lg">+</span>
+                                    Minha lista
+                                </Link>
+                            </div>
+
+                            {course.progress === 100 && course.certificate.enabled && (
+                                <div className="mt-6 flex flex-wrap items-center gap-3 text-sm font-semibold">
+                                    <span className="text-emerald-300">✓ Curso concluído</span>
+                                    {course.certificate.downloadUrl ? (
+                                        <a className="text-[#d5b0ff] transition hover:text-white" href={course.certificate.downloadUrl}>Baixar certificado</a>
+                                    ) : course.certificate.eligible ? (
+                                        <Link as="button" className="text-[#d5b0ff] transition hover:text-white" href={course.certificate.issueUrl} method="post">Emitir certificado</Link>
+                                    ) : null}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section className="relative -mt-16 pb-10 sm:-mt-20">
+                <div className="mb-6 max-w-2xl">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#b879f4]">Conteúdo do curso</p>
+                    <h2 className="mt-2 text-2xl font-black tracking-[-0.04em] text-white sm:text-3xl">Aulas da trilha</h2>
+                </div>
+
+                <div className="space-y-7">
+                    {course.modules.length ? course.modules.map((module) => (
+                        <section key={module.id}>
+                            <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#c28aff]">Módulo {String(module.position).padStart(2, '0')}</p>
+                                    <h3 className="mt-1 text-lg font-black text-white">{module.title}</h3>
+                                </div>
+                                <p className="text-xs font-semibold text-white/38">{module.completedLessons} de {module.lessons.length} aulas</p>
+                            </div>
+                            <div className="overflow-hidden rounded-lg border border-white/[0.07] bg-white/[0.025]">
+                                <div className="divide-y divide-white/[0.055]">
+                                    {module.lessons.map((lesson, index) => (
+                                        <LessonRow
+                                            completed={lesson.completed}
+                                            current={lesson.id === course.nextLessonId}
+                                            durationSeconds={lesson.durationSeconds}
+                                            id={lesson.id}
+                                            key={lesson.id}
+                                            number={index + 1}
+                                            title={lesson.title}
+                                            videoId={lesson.videoId}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+                    )) : (
+                        <div className="border-t border-white/[0.08] py-14 text-center text-sm text-white/48">Este curso ainda não possui aulas disponíveis.</div>
+                    )}
+                </div>
+            </section>
+        </StudentLayout>
+    );
 }

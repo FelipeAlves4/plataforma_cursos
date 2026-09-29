@@ -20,39 +20,99 @@ function Icon({ name }: { name: IconName }) {
 
 export default function StudentLayout({ children }: PropsWithChildren) {
     const { props: { auth, flash }, url } = usePage<PageProps>();
+    const isHome = url.startsWith('/dashboard');
     const isLearningRoute = url.startsWith('/my-courses') || /^\/courses\/[^/]+$/.test(url) || url.startsWith('/lessons/');
-    const links: { href: string; label: string; icon: IconName; active: boolean }[] = [
-        { href: '/dashboard', label: 'Início', icon: 'home', active: url.startsWith('/dashboard') },
-        { href: '/my-courses', label: 'Meus cursos', icon: 'book', active: isLearningRoute },
-        { href: '/courses', label: 'Disponível', icon: 'compass', active: url === '/courses' },
+
+    const desktopLinks = [
+        { href: '/dashboard', label: 'Início', active: isHome },
+        { href: '/my-courses', label: 'Minha lista', active: isLearningRoute },
+        { href: '/courses', label: 'Explorar', active: url === '/courses' },
+    ];
+
+    const mobileLinks: { href: string; label: string; icon: IconName; active: boolean }[] = [
+        { href: '/dashboard', label: 'Início', icon: 'home', active: isHome },
+        { href: '/my-courses', label: 'Minha lista', icon: 'book', active: isLearningRoute },
+        { href: '/courses', label: 'Explorar', icon: 'compass', active: url === '/courses' },
         { href: '/certificates', label: 'Certificados', icon: 'certificate', active: url.startsWith('/certificates') },
         { href: '/profile', label: 'Perfil', icon: 'profile', active: url.startsWith('/profile') },
     ];
 
     return (
         <div className="student-shell min-h-screen overflow-x-hidden bg-[#08070d] text-white">
-            <div aria-hidden className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_88%_0%,rgba(129,56,197,0.13),transparent_30%),radial-gradient(ellipse_at_5%_98%,rgba(61,19,112,0.24),transparent_24%)]" />
-            <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/[0.08] bg-[#0a0910]/85 px-4 py-7 backdrop-blur-2xl lg:flex">
-                <Link aria-label="ASEX — início" className="px-3" href="/dashboard"><BrandLogo className="h-10 w-36" /></Link>
-                <p className="mt-12 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">Sua jornada</p>
-                <nav aria-label="Navegação do aluno" className="mt-3 space-y-1.5">
-                    {links.map((link) => <Link className={`group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c28aff] ${link.active ? 'bg-[#21142e] text-white shadow-[inset_3px_0_0_#a855f7]' : 'text-white/58 hover:bg-white/[0.055] hover:text-white'}`} href={link.href} key={link.label}><Icon name={link.icon} /><span>{link.label}</span></Link>)}
-                </nav>
-                <div className="mt-auto border-t border-white/[0.08] pt-4">
-                    <Link className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-white/70 transition hover:bg-white/[0.055] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c28aff]" href="/profile"><span className="grid h-9 w-9 place-items-center rounded-full bg-[linear-gradient(135deg,#6527a8,#a855f7)] text-sm font-black text-white">{auth.user.name.charAt(0).toUpperCase()}</span><span className="min-w-0"><span className="block truncate">{auth.user.name}</span><span className="mt-0.5 block text-xs font-medium text-white/42">Meu perfil</span></span></Link>
-                    <Link as="button" className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-white/45 transition hover:bg-white/[0.055] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c28aff]" href="/logout" method="post"><Icon name="logout" /><span>Sair da plataforma</span></Link>
-                </div>
-            </aside>
+            <div aria-hidden className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_82%_0%,rgba(129,56,197,0.11),transparent_28%),radial-gradient(ellipse_at_5%_100%,rgba(61,19,112,0.18),transparent_26%)]" />
 
-            <main className="relative mx-auto w-full max-w-[1760px] px-5 pb-28 pt-5 sm:px-8 sm:pt-8 lg:ml-64 lg:w-[calc(100%-16rem)] lg:px-12 lg:pb-14 xl:px-16">
-                <header className="mb-6 flex items-center justify-between lg:hidden"><Link aria-label="ASEX — início" href="/dashboard"><BrandLogo className="h-8 w-28" /></Link><Link aria-label="Abrir perfil" className="grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-white/[0.04] text-sm font-black text-white" href="/profile">{auth.user.name.charAt(0).toUpperCase()}</Link></header>
+            <header className="fixed inset-x-0 top-0 z-40 border-b border-white/[0.045] bg-[linear-gradient(180deg,rgba(7,6,11,.96)_0%,rgba(7,6,11,.78)_58%,rgba(7,6,11,.3)_100%)] backdrop-blur-xl">
+                <div className="mx-auto flex h-[72px] w-full max-w-[1760px] items-center justify-between gap-5 px-5 sm:px-8 lg:h-[76px] lg:px-12 xl:px-16">
+                    <div className="flex min-w-0 items-center gap-8 lg:gap-10">
+                        <Link aria-label="ASEX — início" className="shrink-0" href="/dashboard">
+                            <BrandLogo className="h-8 w-28 sm:h-9 sm:w-32" />
+                        </Link>
+                        <nav aria-label="Navegação principal do aluno" className="hidden items-center gap-7 md:flex">
+                            {desktopLinks.map((link) => (
+                                <Link
+                                    className={`relative py-7 text-sm font-semibold transition ${link.active ? 'text-white' : 'text-white/58 hover:text-white'}`}
+                                    href={link.href}
+                                    key={link.label}
+                                >
+                                    {link.label}
+                                    {link.active && <span aria-hidden className="absolute inset-x-0 bottom-[18px] mx-auto h-0.5 w-5 rounded-full bg-[#a855f7]" />}
+                                </Link>
+                            ))}
+                        </nav>
+                    </div>
+
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <Link
+                            aria-label="Certificados"
+                            className="hidden h-10 w-10 place-items-center rounded-full text-white/58 transition hover:bg-white/[0.07] hover:text-white lg:grid"
+                            href="/certificates"
+                        >
+                            <Icon name="certificate" />
+                        </Link>
+                        <Link
+                            className="flex items-center gap-2.5 rounded-full border border-white/[0.09] bg-black/20 py-1.5 pl-1.5 pr-2.5 text-sm font-semibold text-white/80 transition hover:border-white/[0.18] hover:bg-white/[0.06] hover:text-white"
+                            href="/profile"
+                        >
+                            <span className="grid h-8 w-8 place-items-center rounded-full bg-[linear-gradient(135deg,#6429aa,#a855f7)] text-xs font-black text-white">
+                                {auth.user.name.charAt(0).toUpperCase()}
+                            </span>
+                            <span className="hidden max-w-28 truncate sm:block">{auth.user.name.split(' ')[0]}</span>
+                        </Link>
+                        <Link
+                            as="button"
+                            aria-label="Sair da plataforma"
+                            className="hidden h-10 w-10 place-items-center rounded-full text-white/45 transition hover:bg-white/[0.07] hover:text-white sm:grid"
+                            href="/logout"
+                            method="post"
+                        >
+                            <Icon name="logout" />
+                        </Link>
+                    </div>
+                </div>
+            </header>
+
+            <main className={`relative mx-auto w-full max-w-[1760px] pb-28 lg:pb-16 ${isHome ? 'pt-0' : 'px-5 pt-24 sm:px-8 sm:pt-28 lg:px-12 xl:px-16'}`}>
                 {children}
             </main>
 
-            <nav aria-label="Navegação móvel do aluno" className="fixed inset-x-0 bottom-0 z-30 flex h-[76px] items-center justify-around border-t border-white/[0.09] bg-[#0b0a10]/95 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl lg:hidden">
-                {links.map((link) => <Link className={`flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c28aff] ${link.active ? 'text-[#c28aff]' : 'text-white/52'}`} href={link.href} key={link.label}><Icon name={link.icon} /><span className="truncate">{link.label}</span></Link>)}
+            <nav aria-label="Navegação móvel do aluno" className="fixed inset-x-0 bottom-0 z-40 flex h-[76px] items-center justify-around border-t border-white/[0.09] bg-[#0b0a10]/95 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl md:hidden">
+                {mobileLinks.map((link) => (
+                    <Link
+                        className={`flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c28aff] ${link.active ? 'text-[#c28aff]' : 'text-white/48'}`}
+                        href={link.href}
+                        key={link.label}
+                    >
+                        <Icon name={link.icon} />
+                        <span className="truncate">{link.label}</span>
+                    </Link>
+                ))}
             </nav>
-            {flash?.success && <div aria-live="polite" className="fixed bottom-24 right-4 z-40 max-w-sm rounded-xl border border-white/10 bg-[#1c1425] px-5 py-4 text-sm font-semibold text-white shadow-2xl lg:bottom-6">{flash.success}</div>}
+
+            {flash?.success && (
+                <div aria-live="polite" className="fixed bottom-24 right-4 z-50 max-w-sm rounded-xl border border-white/10 bg-[#17111f]/95 px-5 py-4 text-sm font-semibold text-white shadow-2xl backdrop-blur-xl md:bottom-6">
+                    {flash.success}
+                </div>
+            )}
         </div>
     );
 }
