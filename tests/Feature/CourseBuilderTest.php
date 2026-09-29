@@ -36,6 +36,7 @@ class CourseBuilderTest extends TestCase
             'slug' => 'gestao-de-restaurantes',
             'status' => CourseStatus::Draft->value,
             'thumbnail_path' => null,
+            'instructor_id' => $admin->id,
         ]);
     }
 
