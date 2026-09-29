@@ -55,7 +55,7 @@ class CourseCatalogTest extends TestCase
             );
     }
 
-    public function test_available_programs_do_not_expose_unassigned_published_courses(): void
+    public function test_explore_lists_published_courses_and_marks_student_access(): void
     {
         $student = User::factory()->create();
         $completedCourse = $this->course('Curso concluído', 'curso-concluido', 'Operação', 'Intermediário', 1);
@@ -71,6 +71,13 @@ class CourseCatalogTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Courses/Index')
                 ->has('offers', 0)
+                ->has('courses', 3)
+                ->where('courses.0.title', 'Curso concluído')
+                ->where('courses.0.enrolled', true)
+                ->where('courses.1.title', 'Curso disponível')
+                ->where('courses.1.enrolled', false)
+                ->where('courses.2.title', 'Curso em andamento')
+                ->where('courses.2.enrolled', true)
             );
 
         $this->assertModelExists($draftCourse);
