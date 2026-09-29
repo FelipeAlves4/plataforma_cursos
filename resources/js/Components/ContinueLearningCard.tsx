@@ -1,5 +1,4 @@
 import CourseCover from '@/Components/CourseCover';
-import ProgressBar from '@/Components/ProgressBar';
 import { Link } from '@inertiajs/react';
 
 type Props = {
@@ -12,24 +11,31 @@ type Props = {
     progress: number;
 };
 
-export default function ContinueLearningCard({ lessonId, lessonTitle, moduleTitle, courseTitle, courseSlug, thumbnailPath, progress }: Props) {
+export default function ContinueLearningCard({ lessonId, lessonTitle, moduleTitle, courseTitle, thumbnailPath, progress }: Props) {
     return (
-        <section className="group overflow-hidden rounded-[1.35rem] border border-white/[0.1] bg-[#131018] text-white shadow-[0_24px_64px_rgba(0,0,0,.24)] md:grid md:grid-cols-[minmax(19rem,.9fr)_minmax(0,1.1fr)]">
-            <div className="relative aspect-[16/9] min-h-56 overflow-hidden md:aspect-auto">
-                <CourseCover thumbnailPath={thumbnailPath} title={courseTitle} />
-                <div aria-hidden className="absolute inset-0 bg-[linear-gradient(90deg,transparent_10%,#131018_100%)]" />
-            </div>
-            <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
-                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#c28aff]">Em andamento</p>
-                <p className="mt-4 text-sm font-semibold text-white/60">{courseTitle}</p>
-                <h2 className="mt-1 text-2xl font-black tracking-[-0.04em] sm:text-3xl">{lessonTitle}</h2>
-                <p className="mt-2 text-sm text-white/55">{moduleTitle}</p>
-                <div className="mt-7 max-w-lg"><ProgressBar label="Seu progresso" value={progress} tone="dark" /></div>
-                <div className="mt-6 flex flex-wrap gap-3">
-                    <Link className="asex-gradient inline-flex min-h-11 items-center justify-center rounded-lg px-5 py-3 text-sm font-bold text-white transition hover:brightness-110" href={`/lessons/${lessonId}`}>Continuar aula <span aria-hidden className="ml-2">→</span></Link>
-                    <Link className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/15 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/[0.08]" href={`/courses/${courseSlug}`}>Ver curso</Link>
+        <Link
+            aria-label={`Continuar ${lessonTitle}`}
+            className="group relative block min-w-[300px] overflow-hidden rounded-lg bg-[#15111a] shadow-[0_16px_38px_rgba(0,0,0,.35)] transition duration-300 hover:z-10 hover:shadow-[0_24px_60px_rgba(0,0,0,.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c28aff] motion-safe:hover:-translate-y-1 motion-safe:hover:scale-[1.02] sm:min-w-[420px]"
+            href={`/lessons/${lessonId}`}
+        >
+            <div className="relative aspect-video overflow-hidden">
+                <CourseCover className="transition duration-700 motion-safe:group-hover:scale-[1.05]" thumbnailPath={thumbnailPath} title={courseTitle} />
+                <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#08070d]/95 via-[#08070d]/20 to-transparent" />
+
+                <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+                    <div className="mb-3 flex items-center gap-2">
+                        <span className="grid h-10 w-10 place-items-center rounded-full bg-white text-xs text-[#08070d] shadow-lg">▶</span>
+                        <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#d0a5ff]">Continuar assistindo</span>
+                    </div>
+                    <p className="text-xs font-semibold text-white/56">{courseTitle}</p>
+                    <h3 className="mt-1 line-clamp-1 text-base font-black leading-tight text-white sm:text-lg">{lessonTitle}</h3>
+                    <p className="mt-1 line-clamp-1 text-xs text-white/45">{moduleTitle}</p>
+                </div>
+
+                <div aria-label={`${progress}% concluído`} className="absolute inset-x-0 bottom-0 h-[3px] bg-white/15">
+                    <div className="h-full bg-[#a855f7]" style={{ width: `${progress}%` }} />
                 </div>
             </div>
-        </section>
+        </Link>
     );
 }
