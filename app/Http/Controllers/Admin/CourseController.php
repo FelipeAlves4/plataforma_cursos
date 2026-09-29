@@ -21,7 +21,18 @@ class CourseController extends Controller
         $courses = Course::query()
             ->withCount(['modules', 'lessons', 'enrollments'])
             ->latest()
-            ->get();
+            ->get()
+            ->map(fn (Course $course): array => [
+                'id' => $course->id,
+                'title' => $course->title,
+                'slug' => $course->slug,
+                'status' => $course->status->value,
+                'category' => $course->category,
+                'thumbnailPath' => $this->mediaStorage->courseCoverUrl($course->thumbnail_path),
+                'modulesCount' => $course->modules_count,
+                'lessonsCount' => $course->lessons_count,
+                'enrollmentsCount' => $course->enrollments_count,
+            ]);
 
         return Inertia::render('Admin/Courses/Index', ['courses' => $courses]);
     }
