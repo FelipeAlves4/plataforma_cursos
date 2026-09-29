@@ -29,10 +29,6 @@ class DatabaseSeeder extends Seeder
             'name' => 'Aluno Demonstração', 'email' => 'aluno@example.test', 'password' => Hash::make('password'),
             'role' => UserRole::Student, 'email_verified_at' => now(),
         ]);
-        $instructor = User::query()->create([
-            'name' => 'Mariana Costa', 'email' => 'instrutor@example.test', 'password' => Hash::make('password'),
-            'role' => UserRole::Instructor, 'email_verified_at' => now(),
-        ]);
 
         $courses = [
             [
@@ -65,7 +61,7 @@ class DatabaseSeeder extends Seeder
                 'slug' => $courseData['slug'],
                 'description' => $courseData['description'],
                 'status' => CourseStatus::Published,
-                'category' => $courseData['category'], 'level' => $courseData['level'], 'instructor_id' => $instructor->id,
+                'category' => $courseData['category'], 'level' => $courseData['level'], 'instructor_id' => $admin->id,
                 'estimated_duration_minutes' => 90,
             ]);
 
