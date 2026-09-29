@@ -86,8 +86,8 @@ export default function Show({ course }: Props) {
                                     </Link>
                                 )}
                                 <Link className="inline-flex min-h-12 items-center rounded-lg bg-white/[0.12] px-6 py-3 text-sm font-bold text-white backdrop-blur transition hover:bg-white/[0.19]" href="/my-courses">
-                                    <span aria-hidden className="mr-2 text-lg">+</span>
-                                    Minha lista
+                                    <span aria-hidden className="mr-2 text-base">✓</span>
+                                    Na minha lista
                                 </Link>
                             </div>
 

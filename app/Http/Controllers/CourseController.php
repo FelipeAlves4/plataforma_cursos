@@ -20,11 +20,44 @@ class CourseController extends Controller
         private CertificateService $certificates,
     ) {}
 
-    public function index(Request $request): Response
+    public function index(Request $request, CourseProgressService $progress): Response
     {
+        $user = $request->user();
+        $courses = Course::query()
+            ->published()
+            ->with(['modules.lessons'])
+            ->orderBy('title')
+            ->get();
+        $courseProgress = $progress->detailsFor($user, $courses);
+        $enrolledCourseIds = $user->enrollments()
+            ->whereIn('course_id', $courses->pluck('id'))
+            ->pluck('course_id')
+            ->map(fn ($id): int => (int) $id)
+            ->all();
+
         return Inertia::render('Courses/Index', [
+            'courses' => $courses->map(function (Course $course) use ($courseProgress, $enrolledCourseIds): array {
+                $lessons = $course->modules->flatMap->lessons;
+                $details = $courseProgress[$course->id] ?? ['completedLessons' => 0, 'totalLessons' => $lessons->count(), 'percentage' => 0];
+                $enrolled = in_array($course->id, $enrolledCourseIds, true);
+
+                return [
+                    'id' => $course->id,
+                    'title' => $course->title,
+                    'slug' => $course->slug,
+                    'description' => $course->description,
+                    'thumbnailPath' => $this->mediaStorage->courseCoverUrl($course->thumbnail_path),
+                    'category' => $course->category,
+                    'level' => $course->level,
+                    'lessonCount' => $lessons->count(),
+                    'moduleCount' => $course->modules->count(),
+                    'durationMinutes' => $course->estimated_duration_minutes ?: (int) ceil($lessons->sum('duration_seconds') / 60),
+                    'progress' => $enrolled ? $details['percentage'] : 0,
+                    'enrolled' => $enrolled,
+                ];
+            })->values(),
             'offers' => Offer::query()
-                ->whereBelongsTo($request->user())
+                ->whereBelongsTo($user)
                 ->payable()
                 ->withCount('courses')
                 ->latest()

@@ -36,6 +36,7 @@ class CourseBuilderTest extends TestCase
             'slug' => 'gestao-de-restaurantes',
             'status' => CourseStatus::Draft->value,
             'thumbnail_path' => null,
+            'instructor_id' => $admin->id,
         ]);
     }
 
@@ -292,7 +293,7 @@ class CourseBuilderTest extends TestCase
             );
     }
 
-    public function test_available_programs_do_not_expose_an_unassigned_published_course(): void
+    public function test_explore_shows_an_unassigned_published_course_as_locked(): void
     {
         $course = $this->course();
         $this->lesson($this->module($course));
@@ -300,7 +301,12 @@ class CourseBuilderTest extends TestCase
         $student = User::factory()->create(['role' => UserRole::Student]);
 
         $this->actingAs($student)->get('/courses')
-            ->assertInertia(fn (Assert $page) => $page->has('offers', 0));
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('offers', 0)
+                ->has('courses', 1)
+                ->where('courses.0.id', $course->id)
+                ->where('courses.0.enrolled', false)
+            );
     }
 
     public function test_admin_can_preview_a_draft_course_without_creating_enrollment_or_progress(): void

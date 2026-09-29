@@ -3,12 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\CourseStatus;
-use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreCourseRequest;
 use App\Http\Requests\Admin\UpdateCourseRequest;
 use App\Models\Course;
-use App\Models\User;
 use App\Services\MediaStorage;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -30,15 +28,17 @@ class CourseController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Admin/Courses/Form', ['instructors' => $this->instructors()]);
+        return Inertia::render('Admin/Courses/Form');
     }
 
     public function store(StoreCourseRequest $request): RedirectResponse
     {
         $course = Course::query()->create([
-            ...$request->safe()->except(['thumbnail', 'status']),
+            ...$request->safe()->except(['thumbnail', 'status', 'instructor_id']),
             'status' => CourseStatus::Draft,
+            'instructor_id' => $request->user()->id,
         ]);
+
         try {
             $this->storeThumbnail($course, $request);
         } catch (\Throwable) {
@@ -54,13 +54,16 @@ class CourseController extends Controller
     {
         return Inertia::render('Admin/Courses/Form', [
             'course' => $course->load('modules.lessons'),
-            'instructors' => $this->instructors(),
         ]);
     }
 
     public function update(UpdateCourseRequest $request, Course $course): RedirectResponse
     {
-        $course->update($request->safe()->except('thumbnail'));
+        $course->update([
+            ...$request->safe()->except(['thumbnail', 'instructor_id']),
+            'instructor_id' => $request->user()->id,
+        ]);
+
         try {
             $this->storeThumbnail($course, $request);
         } catch (\Throwable) {
@@ -86,11 +89,5 @@ class CourseController extends Controller
         }
 
         $this->mediaStorage->replaceCourseCover($course, $request->file('thumbnail'));
-    }
-
-    private function instructors(): array
-    {
-        return User::query()->where('role', UserRole::Instructor)->orWhere('role', UserRole::Admin)
-            ->orderBy('name')->get(['id', 'name'])->all();
     }
 }

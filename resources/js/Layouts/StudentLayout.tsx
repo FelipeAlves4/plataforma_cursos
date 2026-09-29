@@ -1,5 +1,6 @@
 import BrandLogo from '@/Components/BrandLogo';
 import { PageProps } from '@/types';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren } from 'react';
 
@@ -61,33 +62,57 @@ export default function StudentLayout({ children }: PropsWithChildren) {
                         </nav>
                     </div>
 
-                    <div className="flex items-center gap-2 sm:gap-3">
-                        <Link
-                            aria-label="Certificados"
-                            className="hidden h-10 w-10 place-items-center rounded-full text-white/58 transition hover:bg-white/[0.07] hover:text-white lg:grid"
-                            href="/certificates"
-                        >
-                            <Icon name="certificate" />
-                        </Link>
-                        <Link
-                            className="flex items-center gap-2.5 rounded-full border border-white/[0.09] bg-black/20 py-1.5 pl-1.5 pr-2.5 text-sm font-semibold text-white/80 transition hover:border-white/[0.18] hover:bg-white/[0.06] hover:text-white"
-                            href="/profile"
-                        >
+                    <Menu as="div" className="relative">
+                        <MenuButton className="flex items-center gap-2.5 rounded-full border border-white/[0.09] bg-black/20 py-1.5 pl-1.5 pr-3 text-sm font-semibold text-white/80 transition hover:border-white/[0.18] hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c28aff]">
                             <span className="grid h-8 w-8 place-items-center rounded-full bg-[linear-gradient(135deg,#6429aa,#a855f7)] text-xs font-black text-white">
                                 {auth.user.name.charAt(0).toUpperCase()}
                             </span>
                             <span className="hidden max-w-28 truncate sm:block">{auth.user.name.split(' ')[0]}</span>
-                        </Link>
-                        <Link
-                            as="button"
-                            aria-label="Sair da plataforma"
-                            className="hidden h-10 w-10 place-items-center rounded-full text-white/45 transition hover:bg-white/[0.07] hover:text-white sm:grid"
-                            href="/logout"
-                            method="post"
+                            <svg aria-hidden className="hidden h-4 w-4 text-white/45 sm:block" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                                <path d="m8 10 4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </MenuButton>
+
+                        <MenuItems
+                            transition
+                            className="absolute right-0 top-full mt-3 w-60 origin-top-right overflow-hidden rounded-xl border border-white/[0.1] bg-[#121017]/98 p-1.5 shadow-[0_24px_70px_rgba(0,0,0,.5)] backdrop-blur-2xl transition duration-150 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 focus:outline-none"
                         >
-                            <Icon name="logout" />
-                        </Link>
-                    </div>
+                            <div className="border-b border-white/[0.07] px-3 py-3">
+                                <p className="truncate text-sm font-bold text-white">{auth.user.name}</p>
+                                <p className="mt-0.5 text-xs font-medium text-white/40">Conta do aluno</p>
+                            </div>
+
+                            <div className="py-1.5">
+                                <MenuItem>
+                                    {({ focus }) => (
+                                        <Link className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold ${focus ? 'bg-white/[0.07] text-white' : 'text-white/68'}`} href="/profile">
+                                            <Icon name="profile" />
+                                            Perfil
+                                        </Link>
+                                    )}
+                                </MenuItem>
+                                <MenuItem>
+                                    {({ focus }) => (
+                                        <Link className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold ${focus ? 'bg-white/[0.07] text-white' : 'text-white/68'}`} href="/certificates">
+                                            <Icon name="certificate" />
+                                            Certificados
+                                        </Link>
+                                    )}
+                                </MenuItem>
+                            </div>
+
+                            <div className="border-t border-white/[0.07] pt-1.5">
+                                <MenuItem>
+                                    {({ focus }) => (
+                                        <Link as="button" className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold ${focus ? 'bg-white/[0.07] text-white' : 'text-white/52'}`} href="/logout" method="post">
+                                            <Icon name="logout" />
+                                            Sair da plataforma
+                                        </Link>
+                                    )}
+                                </MenuItem>
+                            </div>
+                        </MenuItems>
+                    </Menu>
                 </div>
             </header>
 

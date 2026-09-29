@@ -29,7 +29,6 @@ type Course = {
     status: "DRAFT" | "PUBLISHED";
     category?: string | null;
     level?: string | null;
-    instructor_id?: number | null;
     estimated_duration_minutes?: number | null;
     certificate_enabled: boolean;
     modules: Module[];
@@ -498,13 +497,7 @@ function ModuleCard({
     );
 }
 
-export default function Form({
-    course,
-    instructors = [],
-}: {
-    course?: Course;
-    instructors?: Array<{ id: number; name: string }>;
-}) {
+export default function Form({ course }: { course?: Course }) {
     const [activeSection, setActiveSection] = useState<"info" | "content">(
         course ? "content" : "info",
     );
@@ -530,7 +523,6 @@ export default function Form({
         description: course?.description ?? "",
         category: course?.category ?? "",
         level: course?.level ?? "",
-        instructor_id: course?.instructor_id ?? "",
         estimated_duration_minutes: course?.estimated_duration_minutes ?? "",
         certificate_enabled: course?.certificate_enabled ?? true,
         status: course?.status ?? ("DRAFT" as "DRAFT" | "PUBLISHED"),
@@ -756,31 +748,6 @@ export default function Form({
                                 <option>Iniciante</option>
                                 <option>Intermediário</option>
                                 <option>Avançado</option>
-                            </select>
-                        </label>
-                        <label className="grid gap-2 text-sm font-bold">
-                            Instrutor
-                            <select
-                                className={fieldClass}
-                                value={form.data.instructor_id}
-                                onChange={(event) =>
-                                    form.setData(
-                                        "instructor_id",
-                                        event.target.value
-                                            ? Number(event.target.value)
-                                            : "",
-                                    )
-                                }
-                            >
-                                <option value="">Sem instrutor</option>
-                                {instructors.map((instructor) => (
-                                    <option
-                                        key={instructor.id}
-                                        value={instructor.id}
-                                    >
-                                        {instructor.name}
-                                    </option>
-                                ))}
                             </select>
                         </label>
                         <label className="grid gap-2 text-sm font-bold">
